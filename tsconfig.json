@@ -17,6 +17,14 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "ng-trix-lib": [
+        "dist/ng-trix-lib"
+      ],
+      "ng-trix-lib/*": [
+        "dist/ng-trix-lib/*"
+      ]
+    }
   }
 }
