@@ -1,6 +1,6 @@
 {
   "name": "ng-trix",
-  "version": "0.0.5",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,9 +8,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build-ng-trix-patch": "npm version patch & ng build ng-trix-lib",
-    "build-ng-trix-minor": "npm version minor & ng build ng-trix-lib",
-    "build-ng-trix-major": "npm version major & ng build ng-trix-lib"
+    "build-ng-trix-patch": "ng build ng-trix-lib",
+    "build-ng-trix-minor": "ng build ng-trix-lib",
+    "build-ng-trix-major": "ng build ng-trix-lib"
   },
   "private": true,
   "dependencies": {
@@ -24,7 +24,6 @@
     "@angular/router": "~7.2.0",
     "core-js": "^2.5.4",
     "rxjs": "~6.3.3",
-    "trix": "^1.1.1",
     "tslib": "^1.9.0",
     "zone.js": "~0.8.26"
   },

@@ -1,6 +1,6 @@
 {
   "name": "ng-trix-lib",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "keywords": [
     "rich text",
     "wysiwyg",
@@ -9,5 +9,8 @@
   "peerDependencies": {
     "@angular/common": "^7.2.0",
     "@angular/core": "^7.2.0"
+  },
+  "dependencies": {
+    "trix": "^1.1.1"
   }
 }
