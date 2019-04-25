@@ -10,7 +10,5 @@
     "@angular/common": "^7.2.0",
     "@angular/core": "^7.2.0"
   },
-  "dependencies": {
-    "trix": "^1.1.1"
-  }
+  "dependencies": {}
 }

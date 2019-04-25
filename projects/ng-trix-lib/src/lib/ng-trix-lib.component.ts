@@ -1,11 +1,10 @@
 import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewEncapsulation} from '@angular/core';
 import {ControlValueAccessor} from "@angular/forms";
 
-import "../../node_modules/trix/dist/trix.js";
 @Component({
     selector: 'trix-editor',
     template: '',
-    styleUrls: ['../../node_modules/trix/dist/trix.css'],
+    styleUrls: [],
     encapsulation: ViewEncapsulation.None
 })
 export class NgTrixLibComponent implements ControlValueAccessor, OnInit {
