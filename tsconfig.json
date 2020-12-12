@@ -24,6 +24,12 @@
       ],
       "ng-trix-lib/*": [
         "dist/ng-trix-lib/*"
+      ],
+      "ng-time-to-string": [
+        "dist/ng-time-to-string"
+      ],
+      "ng-time-to-string/*": [
+        "dist/ng-time-to-string/*"
       ]
     }
   }

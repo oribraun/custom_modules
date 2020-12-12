@@ -28,8 +28,7 @@
             ],
             "scripts": [
               "node_modules/trix/dist/trix.js"
-            ],
-            "es5BrowserSupport": true
+            ]
           },
           "configurations": {
             "production": {
@@ -161,6 +160,46 @@
             "tsConfig": [
               "projects/ng-trix-lib/tsconfig.lib.json",
               "projects/ng-trix-lib/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "ng-time-to-string": {
+      "root": "projects/ng-time-to-string",
+      "sourceRoot": "projects/ng-time-to-string/src",
+      "projectType": "library",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/ng-time-to-string/tsconfig.lib.json",
+            "project": "projects/ng-time-to-string/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ng-time-to-string/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/ng-time-to-string/src/test.ts",
+            "tsConfig": "projects/ng-time-to-string/tsconfig.spec.json",
+            "karmaConfig": "projects/ng-time-to-string/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/ng-time-to-string/tsconfig.lib.json",
+              "projects/ng-time-to-string/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
