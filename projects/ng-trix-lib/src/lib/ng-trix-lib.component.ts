@@ -1,16 +1,24 @@
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewEncapsulation} from '@angular/core';
-import {ControlValueAccessor} from "@angular/forms";
+import {Component, ElementRef, EventEmitter, forwardRef, Input, OnInit, Output, ViewEncapsulation} from '@angular/core';
+import {ControlValueAccessor, NG_VALUE_ACCESSOR} from "@angular/forms";
 
 @Component({
     selector: 'trix-editor',
     template: '',
     styleUrls: [],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            multi: true,
+            useExisting: forwardRef(() => NgTrixLibComponent),
+        }
+    ],
     encapsulation: ViewEncapsulation.None
 })
 export class NgTrixLibComponent implements ControlValueAccessor, OnInit {
 
     @Input() ngModel: any;
     @Input() input: any;
+    @Input() name: any;
     @Output() ngModelChange = new EventEmitter();
     private _element: ElementRef;
     constructor(element: ElementRef) {
