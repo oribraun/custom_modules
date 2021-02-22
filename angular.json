@@ -144,6 +144,11 @@
           "options": {
             "tsConfig": "projects/ng-trix-lib/tsconfig.lib.json",
             "project": "projects/ng-trix-lib/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ng-time-to-string/tsconfig.lib.prod.json"
+            }
           }
         },
         "test": {
