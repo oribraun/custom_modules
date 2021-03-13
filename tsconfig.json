@@ -5,12 +5,12 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "module": "es2015",
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
+    "downlevelIteration": true,
     "experimentalDecorators": true,
+    "module": "es2020",
+    "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es5",
+    "target": "es2015",
     "typeRoots": [
       "node_modules/@types"
     ],
@@ -19,6 +19,10 @@
       "dom"
     ],
     "paths": {
+      "name-entity-recognition": [
+        "dist/name-entity-recognition/name-entity-recognition",
+        "dist/name-entity-recognition"
+      ],
       "ng-trix-lib": [
         "dist/ng-trix-lib"
       ],
@@ -32,5 +36,9 @@
         "dist/ng-time-to-string/*"
       ]
     }
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true
   }
 }

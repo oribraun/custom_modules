@@ -1,0 +1,84 @@
+<div class="name-entity-recognition">
+    <div class="panel">
+        <header class="card-header">
+            <div class="field">
+                <div class="control" *ngFor="let entity of entities; let i = index">
+                    <div class="tags has-addons" [ngClass]="{'selected': selectedEntities.indexOf(entity.id) > -1}">
+                        <a class="tag" (click)="selectEntity(entity.id)" [ngStyle]="{'color': entity.text_color, 'background-color': entity.background_color}">
+                            Entity
+                        </a>
+                        <span class="tag">{{entity.id}}</span>
+                        <div class="remove" *ngIf="i !== 0" (click)="removeEntity(entity.id)"></div>
+                    </div>
+                </div>
+                <div class="add" (click)="addEntity()"></div>
+            </div>
+            <div class="field">
+                <div class="control" *ngFor="let label of labels">
+    <!--                <div class="tags has-addons">-->
+    <!--                    <a class="tag" (click)="addLabel(label.id)" [ngStyle]="{'color': label.text_color, 'background-color': label.background_color}">-->
+    <!--                        {{label.text}}-->
+    <!--                    </a>-->
+    <!--                    <span class="tag">{{label.shortcut}}</span>-->
+    <!--                </div>-->
+                    <div class="tags">
+                        <a class="tag" (click)="addLabel(label.id)" [ngStyle]="{'color': label.text_color, 'background-color': label.background_color}">
+                            {{label.id}}. {{label.text}}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+    <!--    <div class="entities">-->
+    <!--        <h4>selected Entities</h4>-->
+    <!--        <span *ngFor="let e of selectedEntities; let i = index">{{e}}<span *ngIf="i !== selectedEntities.length - 1">, </span></span>-->
+    <!--    </div>-->
+        <div class="card-content">
+            <div class="content">
+                <div (click)="setSelectedRange($event)" #nameEntityRecognition>
+<!--                        <span class="label with-label-name" *ngFor="let r of chunks"-->
+<!--                             [ngClass]="{tag: r.label && r.label.text_color}"-->
+<!--                             [ngStyle]="r.label && { color: r.label.text_color, backgroundColor: r.label.background_color }"-->
+<!--                        [attr.title]="r.label && r.label.text">{{text.slice(r.start_offset, r.end_offset)}}&lt;!&ndash;-->
+<!--                        &ndash;&gt;<span class="current-label-name" *ngIf="r.label">{{r.label.text}}</span><div class="remove is-small"-->
+<!--                                 *ngIf="r.label && r.label.text_color"-->
+<!--                                 (click)="removeLabel(r)">-->
+<!--                            </div>-->
+<!--                        </span>-->
+                        <span class="label with-title-tile" *ngFor="let r of chunks"
+                          [ngClass]="{tag: r.label && r.label.text_color}"
+                          [ngStyle]="r.label && { color: r.label.text_color, backgroundColor: r.label.background_color }"
+                          [attr.title]="r.label && r.label_id + '. ' + r.label.text">{{text.slice(r.start_offset, r.end_offset)}}<!--
+                        --><div class="remove is-small"
+                                *ngIf="r.label && r.label.text_color"
+                                (click)="removeLabel(r)">
+                            </div>
+                        </span>
+    <!--                <span *ngFor="let r of chunks">-->
+    <!--                    {{text.slice(r.start_offset, r.end_offset)}}-->
+    <!--                </span>-->
+    <!--                <span *ngFor="let r of chunks"-->
+    <!--                      [ngClass]="{tag: r.label && r.label.text_color}"-->
+    <!--                      [ngStyle]="r.label && { color: r.label.text_color, backgroundColor: r.label.background_color }"-->
+    <!--                ><span [innerHTML]="text.slice(r.start_offset, r.end_offset)"></span>&lt;!&ndash;-->
+    <!--                    &ndash;&gt;<button class="delete is-small"-->
+    <!--                               *ngIf="r.label && r.label.text_color"-->
+    <!--                               (click)="removeLabel(r)">-->
+    <!--                        </button>-->
+    <!--                    </span>-->
+                   </div>
+            </div>
+        </div>
+        <div class="buttons">
+            <button (click)="save()">Save</button>
+        </div>
+    </div>
+<!--    <div>-->
+<!--        {{labelPositions | json}}-->
+<!--    </div>-->
+<!--    <h1>Real</h1>-->
+<!--    <div>{{text}}</div>-->
+    <div *ngFor="let item of labelsMap | keyvalue">
+        {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}
+    </div>
+</div>

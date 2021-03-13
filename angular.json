@@ -18,6 +18,7 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.app.json",
+            "aot": true,
             "assets": [
               "src/favicon.ico",
               "src/assets"
@@ -205,6 +206,46 @@
             "tsConfig": [
               "projects/ng-time-to-string/tsconfig.lib.json",
               "projects/ng-time-to-string/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "name-entity-recognition": {
+      "projectType": "library",
+      "root": "projects/name-entity-recognition",
+      "sourceRoot": "projects/name-entity-recognition/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/name-entity-recognition/tsconfig.lib.json",
+            "project": "projects/name-entity-recognition/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/name-entity-recognition/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/name-entity-recognition/src/test.ts",
+            "tsConfig": "projects/name-entity-recognition/tsconfig.spec.json",
+            "karmaConfig": "projects/name-entity-recognition/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/name-entity-recognition/tsconfig.lib.json",
+              "projects/name-entity-recognition/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"

@@ -18,7 +18,7 @@
 <!--  </li>-->
 <!--</ul>-->
 <form class="form" id="edit_contribution_1" novalidate>
-  <trix-editor [(ngModel)]="_text" input="x" name="text"></trix-editor>
+<!--  <trix-editor [(ngModel)]="_text" input="x" name="text"></trix-editor>-->
   <div
   [libNgTimeToString]="100 * 60"
   [showDays]="true"
@@ -30,3 +30,9 @@
   </div>
 </form>
 {{_text}}
+
+<lib-name-entity-recognition
+    [text]="text"
+    [labels]="labels"
+    (onSave)="onSave($event)"
+></lib-name-entity-recognition>

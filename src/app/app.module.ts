@@ -4,8 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { NgTrixComponentComponent } from './ng-trix-component/ng-trix-component.component';
-import {NgTrixLibModule} from "../../projects/ng-trix-lib/src/lib/ng-trix-lib.module";
-import {NgTimeToStringModule} from "../../projects/ng-time-to-string/src/lib/ng-time-to-string.module";
+// import {NgTrixLibModule} from "../../projects/ng-trix-lib/src/lib/ng-trix-lib.module";
+import {NgTimeToStringModule} from '../../projects/ng-time-to-string/src/lib/ng-time-to-string.module';
+import {NameEntityRecognitionModule} from '../../projects/name-entity-recognition/src/lib/name-entity-recognition.module';
 
 @NgModule({
   declarations: [
@@ -14,8 +15,9 @@ import {NgTimeToStringModule} from "../../projects/ng-time-to-string/src/lib/ng-
   ],
   imports: [
     BrowserModule,
-    NgTrixLibModule,
+    // NgTrixLibModule,
     NgTimeToStringModule,
+    NameEntityRecognitionModule,
     FormsModule
   ],
   providers: [],
