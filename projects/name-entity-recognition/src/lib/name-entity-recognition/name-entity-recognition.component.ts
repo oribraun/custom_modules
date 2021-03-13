@@ -231,12 +231,20 @@ export class NameEntityRecognitionComponent implements OnInit {
         }
         for (let i = 0; i < this.labelPositions.length; i++) {
             const e = this.labelPositions[i];
-            if ((e.start_offset <= this.startOffset) && (this.startOffset <= e.end_offset)) {
+            if(
+                this.startOffset < e.start_offset && this.endOffset <= e.start_offset ||
+                this.endOffset > e.end_offset && this.startOffset >= e.end_offset
+            ) {
+
+            } else {
                 return false;
             }
-            if ((e.start_offset <= this.endOffset) && (this.endOffset <= e.end_offset)) {
-                return false;
-            }
+            // if ((e.start_offset <= this.startOffset) && (this.startOffset <= e.end_offset)) {
+            //     return false;
+            // }
+            // if ((e.start_offset <= this.endOffset) && (this.endOffset <= e.end_offset)) {
+            //     return false;
+            // }
         }
         return true;
     }
@@ -360,7 +368,6 @@ export class NameEntityRecognitionComponent implements OnInit {
     }
 
     setLabeledLabel(labelIds, e) {
-        console.log('e.label_id', e.label_id)
         const labelIndex = labelIds.indexOf(e.label_id);
         if (labelIndex > -1) {
             // if this block already labeled
@@ -375,8 +382,10 @@ export class NameEntityRecognitionComponent implements OnInit {
         const labelIndex = labelsMap.indexOf(label.label_id);
         const res: any = {entities: label.entityIds}
         if(labelIndex > -1) {
-            res.label = this.labels[labelIndex].text
-            res.label_id = this.labels[labelIndex].id
+            res.label = this.labels[labelIndex].text;
+            res.label_id = this.labels[labelIndex].id;
+            res.start_index = label.start_offset;
+            res.end_index = label.end_offset;
         }
         this.labelsMap[key] = res;
     }
@@ -507,15 +516,18 @@ export class NameEntityRecognitionComponent implements OnInit {
             const text_annotation = this.labelsMap[label_text];
             const entities = text_annotation.entities.split(',');
             for(const j in entities) {
-                if(!results[entities[j]]) {
+                if (!results[entities[j]]) {
                     results[entities[j]] = {};
                 }
-                if(results[entities[j]][text_annotation.label]) {
-                    if(label_text) {
-                        results[entities[j]][text_annotation.label] += ',' + label_text;
-                    }
-                } else {
-                    results[entities[j]][text_annotation.label] = label_text;
+                if (!results[entities[j]][text_annotation.label]) {
+                    results[entities[j]][text_annotation.label] = [];
+                }
+                if (label_text) {
+                    results[entities[j]][text_annotation.label].push({
+                        text: label_text,
+                        start_index: text_annotation.start_index,
+                        end_index: text_annotation.end_index
+                    })
                 }
 
             }

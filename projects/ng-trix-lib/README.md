@@ -8,7 +8,7 @@ Run `npm i --save ng-trix-lib`.
 
 ## How To Use
 
-* install trix - npm i --save trix. 
+* npm install trix - npm i --save trix. 
 * add to angular.json project trix files
 
     "styles": ["node_modules/trix/dist/trix.css"]

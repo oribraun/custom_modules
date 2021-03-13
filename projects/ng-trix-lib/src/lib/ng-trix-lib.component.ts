@@ -30,11 +30,12 @@ export class NgTrixLibComponent implements ControlValueAccessor, OnInit {
         this._element.nativeElement.addEventListener('keyup', () => {
             this.ngModelChange.emit(this._element.nativeElement.innerHTML);
         });
-        console.log(this.getEditor());
-        console.log(this.getDocument());
-        setTimeout(() => {
-            this.setSelectedRange(this.getDocument().length - 1);
-        });
+        console.log(this._element);
+        // console.log(this.getEditor());
+        // console.log(this.getDocument());
+        // setTimeout(() => {
+        //     this.setSelectedRange(this.getDocument().length - 1);
+        // });
     }
 
     getElement(): any {
