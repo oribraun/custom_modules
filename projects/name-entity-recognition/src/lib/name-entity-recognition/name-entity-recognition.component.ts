@@ -14,136 +14,79 @@ export class NameEntityRecognitionComponent implements OnInit {
     @ViewChild('nameEntityRecognition') el;
     @Output() onSave: EventEmitter<any> = new EventEmitter<any>();
     @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
-    @Input() labels: any = [
+    @Input() entitiesTypes: any = [
         {
-            text: 'first',
+            name: 'first',
             // background_color: '#209cee',
             // text_color: '#ffffff',
         },
         {
-            text: 'last',
+            name: 'last',
             // background_color: '#ffcc00',
             // text_color: '#333333',
         },
         {
-            text: 'prefix',
+            name: 'prefix',
             // background_color: '#333333',
             // text_color: '#ffffff',
         },
         {
-            text: 'address',
+            name: 'address',
             // background_color: '#33cc99',
             // text_color: '#ffffff',
         },
         {
-            text: 'phones',
+            name: 'phones',
             // background_color: '#ff3333',
             // text_color: '#ffffff',
         },
         {
-            text: 'emails',
+            name: 'emails',
             // background_color: '#9933ff',
             // text_color: '#ffffff',
         },
     ];
-    colors = [
-        'rgb(204, 41, 41)',
-        'rgb(230, 43, 23)',
-        'rgb(255, 49, 0)',
-        'rgb(179, 89, 54)',
-        'rgb(204, 103, 41)',
-        'rgb(230, 121, 23)',
-        'rgb(255, 146, 0)',
-        'rgb(179, 137, 54)',
-        'rgb(204, 165, 41)',
-        'rgb(230, 200, 23)',
-        'rgb(255, 243, 0)',
-        'rgb(173, 179, 54)',
-        'rgb(181, 204, 41)',
-        'rgb(180, 230, 23)',
-        'rgb(170, 255, 0)',
-        'rgb(125, 179, 54)',
-        'rgb(119, 204, 41)',
-        'rgb(102, 230, 23)',
-        'rgb(73, 255, 0)',
-        'rgb(77, 179, 54)',
-        'rgb(56, 204, 41)',
-        'rgb(23, 230, 23)',
-        'rgb(0, 255, 24)',
-        'rgb(54, 179, 77)',
-        'rgb(41, 204, 87)',
-        'rgb(23, 230, 102)',
-        'rgb(0, 255, 121)',
-        'rgb(54, 179, 125)',
-        'rgb(41, 204, 150)',
-        'rgb(23, 230, 180)',
-        'rgb(0, 255, 219)',
-        'rgb(54, 179, 173)',
-        'rgb(41, 196, 204)',
-        'rgb(23, 200, 230)',
-        'rgb(0, 194, 255)',
-        'rgb(54, 137, 179)',
-        'rgb(41, 134, 204)',
-        'rgb(23, 121, 230)',
-        'rgb(0, 97, 255)',
-        'rgb(54, 89, 179)',
-        'rgb(41, 72, 204)',
-        'rgb(23, 43, 230)',
-        'rgb(0, 0, 255)',
-        'rgb(65, 54, 179)',
-        'rgb(72, 41, 204)',
-        'rgb(82, 23, 230)',
-        'rgb(97, 0, 255)',
-        'rgb(113, 54, 179)',
-        'rgb(134, 41, 204)',
-        'rgb(161, 23, 230)',
-        'rgb(194, 0, 255)',
-        'rgb(161, 54, 179)',
-        'rgb(196, 41, 204)',
-        'rgb(230, 23, 220)',
-        'rgb(255, 0, 219)',
-        'rgb(179, 54, 149)',
-        'rgb(204, 41, 150)',
-        'rgb(230, 23, 141)',
-        'rgb(255, 0, 121)',
-        'rgb(179, 54, 101)',
-        'rgb(204, 41, 87)',
-        'rgb(230, 23, 62)',
-        'rgb(255, 0, 24)',
-        'rgb(179, 54, 179)'
-    ];
+    colors = [];
     startOffset = 0;
     endOffset = 0;
     chunks: any[] = [];
-    // entityPositions = [{startOffset: 10, endOffset: 15, label_id: 1}];
-    entities = [
+    // entityPositions = [{startOffset: 10, endOffset: 15, entity_id: 1}];
+    recordIdPrefix = 'R';
+    entityIdPrefix = 'E';
+    records = [
         {
-            id: 1,
+            id: this.recordIdPrefix + (1).toString(),
             background_color: '#209cee',
             text_color: '#ffffff',
         },
     ];
-    selectedEntities = [1];
-    labelPositions: any = [
+    selectedEntities: any = [this.records[0].id];
+    currentEntity: any = {};
+    currentRelationsEntity: any = {};
+    animatedModel = false;
+    modalOpen = false;
+    entityPositions: any = [
         {
             end_offset: 23,
-            entityIds: '1',
-            id: 1,
-            label_id: 1,
+            recordIds: 'R1',
+            relationsIds: '',
+            id: 'E1',
+            entity_id: 1,
             prob: 0,
             start_offset: 0,
         },
         {
-            id: 2,
-            prob: 0.0,
-            label_id: 2,
-            entityIds: '1',
-            start_offset: 121,
             end_offset: 138,
+            recordIds: 'R1',
+            relationsIds: '',
+            id: 'E2',
+            entity_id: 2,
+            prob: 0.0,
+            start_offset: 121,
         },
 
     ];
-    labelsMap = {}
+    entitiesTypesMap:any = {};
     constructor(
         private nameEntityRecognitionService: NameEntityRecognitionService
     ) {
@@ -151,28 +94,31 @@ export class NameEntityRecognitionComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        // const colors = this.randomColors(this.labels.length)
+        // const colors = this.randomColors(this.entitiesTypes.length)
         // colors = colors.sort( () => .5 - Math.random();
-        this.generateLabels(this.colors);
+        this.generateEntities(this.colors);
         this.chunks = this.getChunks();
         // this.initAnnotations();
     }
 
-    generateLabels(colors) {
+    generateEntities(colors) {
         let count = 1;
-        for (const i in this.labels) {
+        for (const i in this.entitiesTypes) {
             const color = colors[count - 1];
-            this.labels[i].id = count;
-            // this.labels[i].background_color = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-            if (!this.labels[i].background_color) {
-                this.labels[i].background_color = color;
+            this.entitiesTypes[i].id = count.toString();
+            // this.entitiesTypes[i].background_color = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+            if (!this.entitiesTypes[i].background_color) {
+                this.entitiesTypes[i].background_color = color;
             }
-            if (!this.labels[i].text_color) {
-                this.labels[i].text_color = this.nameEntityRecognitionService.getTextColor(color);
+            if (!this.entitiesTypes[i].text_color) {
+                this.entitiesTypes[i].text_color = this.nameEntityRecognitionService.getTextColor(color);
             }
-            count++
+            count++;
         }
-        // console.log('this.labels', this.labels)
+        if(this.entitiesTypes.length) {
+            this.currentEntity = this.entitiesTypes[0];
+        }
+        // console.log('this.entitiesTypes', this.entitiesTypes)
     }
 
     setSelectedRange(e) {
@@ -200,6 +146,9 @@ export class NameEntityRecognitionComponent implements OnInit {
         this.startOffset = start;
         this.endOffset = end;
         console.log(start, end);
+        if(this.currentEntity) {
+            this.addEntity(this.currentEntity.id);
+        }
     }
 
     mouseUp(e) {
@@ -229,8 +178,8 @@ export class NameEntityRecognitionComponent implements OnInit {
         if (this.startOffset < 0 || this.endOffset < 0) {
             return false;
         }
-        for (let i = 0; i < this.labelPositions.length; i++) {
-            const e = this.labelPositions[i];
+        for (let i = 0; i < this.entityPositions.length; i++) {
+            const e = this.entityPositions[i];
             if(
                 this.startOffset < e.start_offset && this.endOffset <= e.start_offset ||
                 this.endOffset > e.end_offset && this.startOffset >= e.end_offset
@@ -254,90 +203,126 @@ export class NameEntityRecognitionComponent implements OnInit {
         this.endOffset = 0;
     }
 
-    addLabel(labelId) {
+    selectEntity(entity) {
+        this.currentEntity = entity;
+    }
+
+    addEntity(entityId) {
         if (this.validRange()) {
-            const labelMap = this.labelPositions.map((o) => o.id);
-            const maxId = Math.max.apply(null, labelMap) | 0;
-            const label = {
-                id: maxId + 1,
+            const entitiesMap = this.entityPositions.map((o) => o.id.toString());
+            const nextId = this.getNextId(entitiesMap);
+            const entity = {
+                id: this.entityIdPrefix + nextId,
                 prob: 0.0,
                 start_offset: this.startOffset,
                 end_offset: this.endOffset,
-                label_id: labelId,
-                entityIds: this.selectedEntities.join(','),
+                entity_id: entityId,
+                recordIds: this.selectedEntities.join(','),
+                relationsIds: ''
             };
-            this.labelPositions.push(label);
-            this.onAddedLabel();
-            // this.$emit('add-label', label);
+            this.entityPositions.push(entity);
+            this.onAddedEntity();
+            // this.$emit('add-entity', entity);
         }
     }
 
-    onAddedLabel() {
+    onAddedEntity() {
         this.chunks = this.getChunks();
     }
 
-    removeLabel(label) {
-        console.log('label', label);
-        const labelMap = this.labelPositions.map((o) => o.start_offset);
-        const labelIndex = labelMap.indexOf(label.start_offset);
-        if (labelIndex > -1) {
-            const label = this.labelPositions[labelIndex];
-            this.labelPositions.splice(labelIndex, 1);
-            this.rempveFromLabelMap(label);
-            this.onAddedLabel();
+    removeEntity(entity) {
+        console.log('entity', entity);
+        const entitiesMap = this.entityPositions.map((o) => o.start_offset);
+        const entityIndex = entitiesMap.indexOf(entity.start_offset);
+        if (entityIndex > -1) {
+            // const entity = this.entityPositions[entityIndex];
+            this.entityPositions.splice(entityIndex, 1);
+            this.rempveFromEntityMap(entity);
+            this.onAddedEntity();
         }
-        // this.$emit('remove-label', index);
+        // this.$emit('remove-entity', index);
     }
 
-    createLabel(startOffset, endOffset) {
-        const label = {
+    open(entity) {
+        this.currentRelationsEntity = entity;
+        this.animatedModel = true;
+        setTimeout(() => {
+            this.modalOpen = true;
+        })
+    }
+
+    close() {
+        this.modalOpen = false;
+        setTimeout(() => {
+            this.animatedModel = false;
+            this.currentRelationsEntity = {};
+        }, 300)
+    }
+
+    toggleRelations(entity) {
+        let relationsIds = [];
+        if(this.currentRelationsEntity.relationsIds) {
+            relationsIds = this.currentRelationsEntity.relationsIds.split(',');
+        }
+        const index = relationsIds.indexOf(entity.id.toString());
+        if(index > -1) {
+            relationsIds.splice(index, 1);
+        } else {
+            relationsIds.push(entity.id);
+        }
+        this.currentRelationsEntity.relationsIds = relationsIds.join(',');
+        this.updateEntityRelations(this.currentRelationsEntity);
+    }
+
+    createEntity(startOffset, endOffset) {
+        const entity = {
             id: 0,
-            label_id: -1,
+            entity_id: -1,
             start_offset: startOffset,
             end_offset: endOffset,
         };
-        return label;
+        return entity;
     }
 
-    annotate(labelId) {
-        // this.$refs.annotator.addLabel(labelId);
+    annotate(entityId) {
+        // this.$refs.annotator.addEntity(entityId);
     }
 
-    // addLabel(annotation) {
+    // addEntity(annotation) {
     // this.annotations[this.pageNumber].push(annotation);
     // }
 
-    sortedLabelPositions() {
-        return this.labelPositions.sort((a, b) => a.start_offset - b.start_offset);
+    sortedEntityPositions() {
+        return this.entityPositions.sort((a, b) => a.start_offset - b.start_offset);
     }
 
     // getChunks1() {
     //     this.chunks = [];
     //     const res = [];
     //     let left = 0;
-    //     const labelMap = this.labels.map((o) => o.id);
-    //     const sortedPositions = this.sortedLabelPositions();
+    //     const entitiesTypesMap = this.entitiesTypes.map((o) => o.id);
+    //     const sortedPositions = this.sortedEntityPositions();
     //     for (let i = 0; i < sortedPositions.length; i++) {
     //         const e: any = sortedPositions[i];
-    //         e.real_label = {
+    //         e.real_entity = {
     //             text_color: '',
     //             background_color: '',
     //         };
-    //         const currentLabel: any = this.makeLabel(left, e.start_offset);
-    //         if (e.label_id > -1) {
-    //             currentLabel.id = e.id;
-    //             currentLabel.label_id = e.label_id;
+    //         const currentEntity: any = this.makeEntity(left, e.start_offset);
+    //         if (e.entity_id > -1) {
+    //             currentEntity.id = e.id;
+    //             currentEntity.entity_id = e.entity_id;
     //         }
-    //         const labelIndex = labelMap.indexOf(currentLabel.label);
-    //         if (labelIndex > -1) {
-    //             currentLabel.real_label = this.labels[labelIndex];
+    //         const entityIndex = entitiesTypesMap.indexOf(currentEntity.entity);
+    //         if (entityIndex > -1) {
+    //             currentEntity.real_entity = this.entitiesTypes[entityIndex];
     //         }
-    //         res.push(currentLabel);
+    //         res.push(currentEntity);
     //         res.push(e);
     //         left = e.end_offset;
     //     }
-    //     const l: any = this.makeLabel(left, this.text.length);
-    //     l.real_label = {
+    //     const l: any = this.makeEntity(left, this.text.length);
+    //     l.real_entity = {
     //         text_color: '',
     //         background_color: '',
     //     };
@@ -349,93 +334,98 @@ export class NameEntityRecognitionComponent implements OnInit {
     getChunks() {
         const res = [];
         let selectionPosition = 0;
-        const labelIds = this.labels.map((o) => o.id);
-        const sortedPositions = this.sortedLabelPositions();
+        const entitiesTypesMap = this.entitiesTypes.map((o) => o.id.toString());
+        const sortedPositions = this.sortedEntityPositions();
         for (let i = 0; i < sortedPositions.length; i++) {
             const e: any = sortedPositions[i];
             if(selectionPosition < e.start_offset) {
-                const chunk = this.createLabel(selectionPosition, e.start_offset);
+                const chunk = this.createEntity(selectionPosition, e.start_offset);
                 res.push(chunk);
             }
-            this.setLabeledLabel(labelIds, e);
+            this.addEntityTypeIfExist(entitiesTypesMap, e);
             res.push(e);
-            selectionPosition = e.end_offset; // go to end of current label
+            selectionPosition = e.end_offset; // go to end of current entity
         }
-        const l = this.createLabel(selectionPosition, this.text.length);
+        const l = this.createEntity(selectionPosition, this.text.length);
         res.push(l);
 
         return res;
     }
 
-    setLabeledLabel(labelIds, e) {
-        const labelIndex = labelIds.indexOf(e.label_id);
-        if (labelIndex > -1) {
-            // if this block already labeled
-            e.label = this.labels[labelIndex];
-            this.addToLabelMap(e);
+    addEntityTypeIfExist(entitiesTypesMap, e) {
+        const entityIndex = entitiesTypesMap.indexOf(e.entity_id.toString());
+        if (entityIndex > -1) {
+            // if this block already entityed
+            e.entity_type = this.entitiesTypes[entityIndex];
+            this.addToEntityMap(e);
         }
     }
 
-    addToLabelMap(label) {
-        const key = this.text.slice(label.start_offset, label.end_offset);
-        const labelsMap = this.labels.map((o) => o.id);
-        const labelIndex = labelsMap.indexOf(label.label_id);
-        const res: any = {entities: label.entityIds}
-        if(labelIndex > -1) {
-            res.label = this.labels[labelIndex].text;
-            res.label_id = this.labels[labelIndex].id;
-            res.start_index = label.start_offset;
-            res.end_index = label.end_offset;
+    addToEntityMap(entity) {
+        const key = this.text.slice(entity.start_offset, entity.end_offset);
+        const entitiesTypesMap = this.entitiesTypes.map((o) => o.id.toString());
+        const entityIndex = entitiesTypesMap.indexOf(entity.entity_id.toString());
+        const res: any = {records: entity.recordIds, relationsIds: entity.relationsIds}
+        if(entityIndex > -1) {
+            res.id = entity.id;
+            res.entity_type = this.entitiesTypes[entityIndex].name;
+            res.entity_id = this.entitiesTypes[entityIndex].id;
+            res.start_index = entity.start_offset;
+            res.end_index = entity.end_offset;
         }
-        this.labelsMap[key] = res;
+        this.entitiesTypesMap[key] = res;
     }
-    rempveFromLabelMap(label) {
-        const key = this.text.slice(label.start_offset, label.end_offset);
-        delete this.labelsMap[key];
+    rempveFromEntityMap(entity) {
+        const key = this.text.slice(entity.start_offset, entity.end_offset);
+        delete this.entitiesTypesMap[key];
     }
-    updateLabelEntities(label) {
-        const key = this.text.slice(label.start_offset, label.end_offset);
-        this.labelsMap[key].entities = label.entityIds;
+    updateEntityEntities(entity) {
+        const key = this.text.slice(entity.start_offset, entity.end_offset);
+        this.entitiesTypesMap[key].records = entity.recordIds;
     }
-    rempveEntityFromLabelMap(label, entityId) {
-        const key = this.text.slice(label.start_offset, label.end_offset);
-        const arr = this.labelsMap[key].entities.split(',');
+    updateEntityRelations(entity) {
+        const key = this.text.slice(entity.start_offset, entity.end_offset);
+        this.entitiesTypesMap[key].relationsIds = entity.relationsIds;
+    }
+    rempveRecordFromEntityMap(entity, entityId) {
+        const key = this.text.slice(entity.start_offset, entity.end_offset);
+        const arr = this.entitiesTypesMap[key].records.split(',');
         const index = arr.indexOf(entityId);
         if(index > -1) {
             arr.splice(index, 1);
-            this.labelsMap[key].entities = arr.join(',');
+            this.entitiesTypesMap[key].records = arr.join(',');
 
         }
     }
-    // id2label() {
-    //     let id2label = {};
+    // id2entity() {
+    //     let id2entity = {};
     //     // default value;
-    //     id2label[-1] = {
+    //     id2entity[-1] = {
     //         text_color: '',
     //         background_color: '',
     //     };
-    //     for (let i = 0; i < this.labels.length; i++) {
-    //         const label = this.labels[i];
-    //         id2label[label.id] = label;
+    //     for (let i = 0; i < this.entitiesTypes.length; i++) {
+    //         const entity = this.entitiesTypes[i];
+    //         id2entity[entity.id] = entity;
     //     }
-    //     return id2label;
+    //     return id2entity;
     // }
 
     // initAnnotations() {
-    //     const labelMap = this.labels.map((o) => o.id);
+    //     const entitiesTypesMap = this.entitiesTypes.map((o) => o.id);
     //     for (const i in this.annotations) {
     //         const obj: any = this.annotations[i];
     //         const id = obj.id;
     //         const prob = obj.prob;
-    //         const labelId = obj.label;
+    //         const entityId = obj.entity;
     //         const start_offset = obj.start_offset;
     //         const end_offset = obj.end_offset;
-    //         const labelIndex = labelMap.indexOf(labelId);
-    //         const label = this.labels[labelIndex];
-    //         const labelBackground = label.background_color;
-    //         const labelColor = label.text_color;
+    //         const entityIndex = entitiesTypesMap.indexOf(entityId);
+    //         const entity = this.entitiesTypes[entityIndex];
+    //         const entityBackground = entity.background_color;
+    //         const entityColor = entity.text_color;
     //         const template = `
-    //         <span class="labeled ${label.text}" style="background-color: ${label.background_color}; color: ${label.text}">
+    //         <span class="entityed ${entity.text}" style="background-color: ${entity.background_color}; color: ${entity.text}">
     //             ${this.text.substr(start_offset, end_offset - start_offset)}
     //         </span>
     //         `;
@@ -444,54 +434,60 @@ export class NameEntityRecognitionComponent implements OnInit {
     //     }
     // }
 
-    addEntity() {
-        const labelMap = this.entities.map((o) => o.id);
-        const maxId = Math.max.apply(null, labelMap) | 0;
+    addRecord() {
+        const recordsMap = this.records.map((o) => o.id.toString());
+        const nextId = this.getNextId(recordsMap);
         const data = {
-            id: maxId + 1,
+            id: this.recordIdPrefix + nextId.toString(),
             background_color: '#209cee',
             text_color: '#ffffff',
         };
-        this.entities.push(data)
+        this.records.push(data)
     }
 
-    removeEntity(id) {
-        if(this.entities.length === 1) {
+    removeRecord(id) {
+        if(this.records.length === 1) {
             return;
         }
-        const labelMap = this.entities.map((o) => o.id);
-        const labelIndex = labelMap.indexOf(id);
-        if (labelIndex > -1) {
-            const entityId = this.entities[labelIndex].id;
-            this.entities.splice(labelIndex, 1);
-            this.removeEntityFromSelectedLabels(entityId)
-            this.removeEntityFromLabels(entityId)
+        const recordsMap = this.records.map((o) => o.id.toString());
+        const recordIndex = recordsMap.indexOf(id.toString());
+        if (recordIndex > -1) {
+            const recordId = this.records[recordIndex].id;
+            this.records.splice(recordIndex, 1);
+            this.removeRecordFromSelectedEntities(recordId);
+            this.removeRecordFromEntities(recordId);
         }
-        // this.$emit('remove-label', index);
+        // this.$emit('remove-entity', index);
     }
 
-    removeEntityFromSelectedLabels(entityId) {
+    removeRecordFromSelectedEntities(entityId) {
         const index = this.selectedEntities.indexOf(entityId);
         if(index > -1) {
             this.selectedEntities.splice(index, 1);
+            if(!this.selectedEntities.length) {
+                this.selectedEntities.push(this.records[0].id);
+            }
         }
     }
 
-    removeEntityFromLabels(entityId) {
-        for (const i in this.labelPositions) {
-            const arr = this.labelPositions[i].entityIds.split(',').map( Number );
+    removeRecordFromEntities(entityId) {
+        for (const i in this.entityPositions) {
+            const arr = this.entityPositions[i].recordIds.split(',').map( Number );
             const index = arr.indexOf(entityId);
             if(index > -1) {
                 arr.splice(index, 1);
-                this.labelPositions[i].entityIds = arr.join(',');
-                this.updateLabelEntities(this.labelPositions[i])
+                this.entityPositions[i].recordIds = arr.join(',');
+                this.updateEntityEntities(this.entityPositions[i])
 
             }
         }
     }
-    selectEntity(id) {
+    selectRecord(id) {
         const index = this.selectedEntities.indexOf(id);
         if(index > -1) {
+            if(this.selectedEntities.length <= 1) {
+                return;
+            }
             this.selectedEntities.splice(index, 1);
         } else {
             this.selectedEntities.push(id);
@@ -499,12 +495,12 @@ export class NameEntityRecognitionComponent implements OnInit {
     }
 
     save() {
-        // console.log(this.labelPositions);
+        // console.log(this.entityPositions);
         const data = {
             text: this.text,
-            labels: this.labels,
-            positions: this.labelPositions,
-            entities: this.entities,
+            entitiesTypes: this.entitiesTypes,
+            positions: this.entityPositions,
+            records: this.records,
             results: this.buildResults()
         }
         this.onSave.emit(data);
@@ -512,19 +508,21 @@ export class NameEntityRecognitionComponent implements OnInit {
 
     buildResults() {
         const results = {};
-        for(const label_text in this.labelsMap) {
-            const text_annotation = this.labelsMap[label_text];
-            const entities = text_annotation.entities.split(',');
-            for(const j in entities) {
-                if (!results[entities[j]]) {
-                    results[entities[j]] = {};
+        for(const entity_text in this.entitiesTypesMap) {
+            const text_annotation = this.entitiesTypesMap[entity_text];
+            const records = text_annotation.records.split(',');
+            for(const j in records) {
+                if (!results[records[j]]) {
+                    results[records[j]] = {};
                 }
-                if (!results[entities[j]][text_annotation.label]) {
-                    results[entities[j]][text_annotation.label] = [];
+                if (!results[records[j]][text_annotation.entity_type]) {
+                    results[records[j]][text_annotation.entity_type] = [];
                 }
-                if (label_text) {
-                    results[entities[j]][text_annotation.label].push({
-                        text: label_text,
+                if (entity_text) {
+                    results[records[j]][text_annotation.entity_type].push({
+                        text: entity_text,
+                        // id: text_annotation.id,
+                        relationsIds: text_annotation.relationsIds,
                         start_index: text_annotation.start_index,
                         end_index: text_annotation.end_index
                     })
@@ -534,6 +532,19 @@ export class NameEntityRecognitionComponent implements OnInit {
         }
 
         return results
+    }
+
+    getNextId(arr, prefix?) {
+        let id = arr.reduce((r,o) => {
+            return r < o ? o : r;
+        });
+        id = parseInt(id.toString().replace(/^[^0-9]+/, ''), 0);
+        console.log('id', id)
+        id++;
+        if(prefix) {
+            id = prefix + id;
+        }
+        return id;
     }
 
     randomColors(t)

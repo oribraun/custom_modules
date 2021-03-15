@@ -25,7 +25,7 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 #example
 ```json
-labels = [
+entitiesTypes = [
      {
          text: 'first',
          background_color: '#209cee',
@@ -68,6 +68,6 @@ labels = [
 #how to use
 <lib-name-entity-recognition
     [text]="text"
-    [labels]="labels"
+    [entitiesTypes]="entitiesTypes"
     (onSave)="onSave($event)"
 ></lib-name-entity-recognition>

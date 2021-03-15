@@ -8,34 +8,34 @@ import {Component, EventEmitter, OnInit} from '@angular/core';
 export class AppComponent implements OnInit {
     _text = 'test'
     title = 'ng-trix';
-    labels = [
+    entitiesTypes = [
         {
-            text: 'first',
+            name: 'first',
             // background_color: '#209cee',
             // text_color: '#ffffff',
         },
         {
-            text: 'last',
+            name: 'last',
             // background_color: '#ffcc00',
             // text_color: '#333333',
         },
         {
-            text: 'prefix',
+            name: 'prefix',
             // background_color: '#333333',
             // text_color: '#ffffff',
         },
         {
-            text: 'address',
+            name: 'address',
             // background_color: '#33cc99',
             // text_color: '#ffffff',
         },
         {
-            text: 'phones',
+            name: 'phones',
             // background_color: '#ff3333',
             // text_color: '#ffffff',
         },
         {
-            text: 'emails',
+            name: 'emails',
             // background_color: '#9933ff',
             // text_color: '#ffffff',
         },

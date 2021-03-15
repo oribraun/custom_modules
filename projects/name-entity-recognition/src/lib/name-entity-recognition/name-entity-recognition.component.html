@@ -2,83 +2,116 @@
     <div class="panel">
         <header class="card-header">
             <div class="field">
-                <div class="control" *ngFor="let entity of entities; let i = index">
-                    <div class="tags has-addons" [ngClass]="{'selected': selectedEntities.indexOf(entity.id) > -1}">
-                        <a class="tag" (click)="selectEntity(entity.id)" [ngStyle]="{'color': entity.text_color, 'background-color': entity.background_color}">
-                            Entity
+                <div class="control" *ngFor="let record of records; let i = index">
+                    <div class="tags has-addons" [ngClass]="{'selected': selectedEntities.indexOf(record.id) > -1}">
+                        <div class="shadow" (click)="selectRecord(record.id)"></div>
+                        <a class="tag" (click)="selectRecord(record.id)" [ngStyle]="{'color': record.text_color, 'background-color': record.background_color}">
+                            Record
                         </a>
-                        <span class="tag">{{entity.id}}</span>
-                        <div class="remove" *ngIf="i !== 0" (click)="removeEntity(entity.id)"></div>
+                        <span class="tag addon">{{record.id}}</span>
+                        <div class="remove" *ngIf="i !== 0" (click)="removeRecord(record.id)"></div>
                     </div>
                 </div>
-                <div class="add" (click)="addEntity()"></div>
+                <div class="add" (click)="addRecord()"></div>
             </div>
             <div class="field">
-                <div class="control" *ngFor="let label of labels">
-    <!--                <div class="tags has-addons">-->
-    <!--                    <a class="tag" (click)="addLabel(label.id)" [ngStyle]="{'color': label.text_color, 'background-color': label.background_color}">-->
-    <!--                        {{label.text}}-->
-    <!--                    </a>-->
-    <!--                    <span class="tag">{{label.shortcut}}</span>-->
-    <!--                </div>-->
+                <div class="control" *ngFor="let entity of entitiesTypes">
+                    <!--                <div class="tags has-addons">-->
+                    <!--                    <a class="tag" (click)="addEntity(label.id)" [ngStyle]="{'color': label.text_color, 'background-color': label.background_color}">-->
+                    <!--                        {{label.text}}-->
+                    <!--                    </a>-->
+                    <!--                    <span class="tag">{{label.shortcut}}</span>-->
+                    <!--                </div>-->
                     <div class="tags">
-                        <a class="tag" (click)="addLabel(label.id)" [ngStyle]="{'color': label.text_color, 'background-color': label.background_color}">
-                            {{label.id}}. {{label.text}}
+                        <a class="tag" [ngClass]="{active: currentEntity.id == entity.id}" (click)="selectEntity(entity)" [ngStyle]="{'color': entity.text_color, 'background-color': entity.background_color}">
+                            {{entity.name}}
                         </a>
                     </div>
                 </div>
             </div>
         </header>
-    <!--    <div class="entities">-->
-    <!--        <h4>selected Entities</h4>-->
-    <!--        <span *ngFor="let e of selectedEntities; let i = index">{{e}}<span *ngIf="i !== selectedEntities.length - 1">, </span></span>-->
-    <!--    </div>-->
+        <!--    <div class="entities">-->
+        <!--        <h4>selected Entities</h4>-->
+        <!--        <span *ngFor="let e of selectedEntities; let i = index">{{e}}<span *ngIf="i !== selectedEntities.length - 1">, </span></span>-->
+        <!--    </div>-->
         <div class="card-content">
             <div class="content">
                 <div (click)="setSelectedRange($event)" #nameEntityRecognition>
-<!--                        <span class="label with-label-name" *ngFor="let r of chunks"-->
-<!--                             [ngClass]="{tag: r.label && r.label.text_color}"-->
-<!--                             [ngStyle]="r.label && { color: r.label.text_color, backgroundColor: r.label.background_color }"-->
-<!--                        [attr.title]="r.label && r.label.text">{{text.slice(r.start_offset, r.end_offset)}}&lt;!&ndash;-->
-<!--                        &ndash;&gt;<span class="current-label-name" *ngIf="r.label">{{r.label.text}}</span><div class="remove is-small"-->
-<!--                                 *ngIf="r.label && r.label.text_color"-->
-<!--                                 (click)="removeLabel(r)">-->
-<!--                            </div>-->
-<!--                        </span>-->
-                        <span class="label with-title-tile" *ngFor="let r of chunks"
-                          [ngClass]="{tag: r.label && r.label.text_color}"
-                          [ngStyle]="r.label && { color: r.label.text_color, backgroundColor: r.label.background_color }"
-                          [attr.title]="r.label && r.label_id + '. ' + r.label.text">{{text.slice(r.start_offset, r.end_offset)}}<!--
+                    <!--                        <span class="label with-label-name" *ngFor="let r of chunks"-->
+                    <!--                             [ngClass]="{tag: r.entity && r.entity.text_color}"-->
+                    <!--                             [ngStyle]="r.entity && { color: r.entity.text_color, backgroundColor: r.entity.background_color }"-->
+                    <!--                        [attr.title]="r.entity && r.entity.text">{{text.slice(r.start_offset, r.end_offset)}}&lt;!&ndash;-->
+                    <!--                        &ndash;&gt;<span class="current-label-name" *ngIf="r.entity">{{r.entity.text}}</span><div class="remove is-small"-->
+                    <!--                                 *ngIf="r.entity && r.entity.text_color"-->
+                    <!--                                 (click)="removeEntity(r)">-->
+                    <!--                            </div>-->
+                    <!--                        </span>-->
+                    <span (click)="r.entity_type && open(r)" class="label with-title-tile {{r.entity_type && 'pointer'}}" *ngFor="let r of chunks"
+                          [ngClass]="{tag: r.entity_type && r.entity_type.text_color}"
+                          [ngStyle]="r.entity_type && { color: r.entity_type.text_color, backgroundColor: r.entity_type.background_color }"
+                          [attr.title]="r.entity_type && r.entity_type.name">{{text.slice(r.start_offset, r.end_offset)}}<!--
                         --><div class="remove is-small"
-                                *ngIf="r.label && r.label.text_color"
-                                (click)="removeLabel(r)">
+                                *ngIf="r.entity_type && r.entity_type.text_color"
+                                (click)="removeEntity(r)">
                             </div>
                         </span>
-    <!--                <span *ngFor="let r of chunks">-->
-    <!--                    {{text.slice(r.start_offset, r.end_offset)}}-->
-    <!--                </span>-->
-    <!--                <span *ngFor="let r of chunks"-->
-    <!--                      [ngClass]="{tag: r.label && r.label.text_color}"-->
-    <!--                      [ngStyle]="r.label && { color: r.label.text_color, backgroundColor: r.label.background_color }"-->
-    <!--                ><span [innerHTML]="text.slice(r.start_offset, r.end_offset)"></span>&lt;!&ndash;-->
-    <!--                    &ndash;&gt;<button class="delete is-small"-->
-    <!--                               *ngIf="r.label && r.label.text_color"-->
-    <!--                               (click)="removeLabel(r)">-->
-    <!--                        </button>-->
-    <!--                    </span>-->
-                   </div>
+                    <!--                <span *ngFor="let r of chunks">-->
+                    <!--                    {{text.slice(r.start_offset, r.end_offset)}}-->
+                    <!--                </span>-->
+                    <!--                <span *ngFor="let r of chunks"-->
+                    <!--                      [ngClass]="{tag: r.entity && r.entity.text_color}"-->
+                    <!--                      [ngStyle]="r.entity && { color: r.entity.text_color, backgroundColor: r.entity.background_color }"-->
+                    <!--                ><span [innerHTML]="text.slice(r.start_offset, r.end_offset)"></span>&lt;!&ndash;-->
+                    <!--                    &ndash;&gt;<button class="delete is-small"-->
+                    <!--                               *ngIf="r.entity && r.entity.text_color"-->
+                    <!--                               (click)="removeEntity(r)">-->
+                    <!--                        </button>-->
+                    <!--                    </span>-->
+                </div>
             </div>
         </div>
         <div class="buttons">
             <button (click)="save()">Save</button>
         </div>
     </div>
-<!--    <div>-->
-<!--        {{labelPositions | json}}-->
-<!--    </div>-->
-<!--    <h1>Real</h1>-->
-<!--    <div>{{text}}</div>-->
-    <div *ngFor="let item of labelsMap | keyvalue">
+    <!--    <div>-->
+    <!--        {{labelPositions | json}}-->
+    <!--    </div>-->
+    <!--    <h1>Real</h1>-->
+    <!--    <div>{{text}}</div>-->
+    <div *ngFor="let item of entitiesTypesMap | keyvalue">
         {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}
+    </div>
+</div>
+<div class="modal fade" [ngClass]="{show: modalOpen}" *ngIf="animatedModel">
+    <div class="backdrop" (click)="close()"></div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLiveLabel">Relations - {{text.slice(currentRelationsEntity.start_offset, currentRelationsEntity.end_offset)}}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="close()">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="options-box">
+                    <div class="item" *ngFor="let l of entityPositions">
+                        <div class="options"
+                             *ngIf="l.id !== currentRelationsEntity.id"
+                             [ngStyle]="l.entity_type && { color: l.entity_type.text_color, backgroundColor: l.entity_type.background_color }">
+                            <div class="label with-title-tile"
+                                 [attr.title]="l.entity_type && l.entity_type.name">
+                                <label for="">
+                                    <input class="checkbox" type="checkbox"
+                                           [checked]="currentRelationsEntity.relationsIds.indexOf(l.id) > -1"
+                                           (click)="toggleRelations(l)">
+                                    {{text.slice(l.start_offset, l.end_offset)}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

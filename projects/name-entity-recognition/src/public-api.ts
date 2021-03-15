@@ -3,5 +3,5 @@
  */
 
 export * from './lib/name-entity-recognition.service';
-export * from './lib/name-entity-recognition.component';
+export * from './lib/name-entity-recognition/name-entity-recognition.component';
 export * from './lib/name-entity-recognition.module';
