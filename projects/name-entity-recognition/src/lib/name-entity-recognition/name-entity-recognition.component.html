@@ -82,27 +82,29 @@
     <div class="entities-type-button">
         <div class="arrow" (click)="toggleEntitiesMap()"></div>
     </div>
-    <div class="entities-type-map-wrapper"
-         [@show-panel]="showEntitiesMap ? 'true' : 'false'">
-        <div class="entities-type-map">
-            <div *ngFor="let item of entitiesTypesMap | keyvalue">
-                <div class="header">
-                    <div class="label with-title-tile"
-                         [ngStyle]="{ color: item.value.entity_color, backgroundColor: item.value.entity_background }"
-                         [attr.title]="item.value.entity_type">
-                        {{item.key}}
+    <div class="entities-type-map-wrapper">
+        <div class="entities-type-map-box"
+             [@show-panel]="showEntitiesMap ? 'true' : 'false'">
+            <div class="entities-type-map">
+                <div *ngFor="let item of entitiesTypesMap | keyvalue">
+                    <div class="header">
+                        <div class="label with-title-tile"
+                             [ngStyle]="{ color: item.value.entity_color, backgroundColor: item.value.entity_background }"
+                             [attr.title]="item.value.entity_type">
+                            {{item.key}}
+                        </div>
                     </div>
+    <!--                <h4><span style="border-bottom: 1px solid {{item.value.entity_background}}">{{item.key}}</span></h4>-->
+                    <p>
+                        <b>Id</b> - {{item.value.id}},
+                        <b>Records</b> - {{item.value.records}},
+                        <b>relations ids</b> - {{item.value.relationsIds}},
+    <!--                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,-->
+                        <b>start index</b> {{item.value.start_index}},
+                        <b>end index</b> {{item.value.end_index}}
+                    </p>
+    <!--                {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}-->
                 </div>
-<!--                <h4><span style="border-bottom: 1px solid {{item.value.entity_background}}">{{item.key}}</span></h4>-->
-                <p>
-                    <b>Id</b> - {{item.value.id}},
-                    <b>Records</b> - {{item.value.records}},
-                    <b>relations ids</b> - {{item.value.relationsIds}},
-<!--                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,-->
-                    <b>start index</b> {{item.value.start_index}},
-                    <b>end index</b> {{item.value.end_index}}
-                </p>
-<!--                {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}-->
             </div>
         </div>
     </div>

@@ -303,18 +303,26 @@
         }
     }
     .entities-type-map-wrapper {
-        overflow: hidden;
-        box-shadow: 0 0 5px #ccc;
-        .entities-type-map {
-            padding: ~'.75em @{padding}em';
-            .header {
-                .label {
-                    position: relative;
-                    display: inline-block;
-                    line-height: 1;
-                    padding-left: 0.5em;
-                    padding-right: 0.5em;
-                    align-items: center;
+        position: relative;
+        .entities-type-map-box {
+            overflow: hidden;
+            box-shadow: 0 0 5px #ccc;
+            position: absolute;
+            top:0;
+            left:0;
+            right:0;
+            .entities-type-map {
+                padding: ~'.75em @{padding}em';
+
+                .header {
+                    .label {
+                        position: relative;
+                        display: inline-block;
+                        line-height: 1;
+                        padding-left: 0.5em;
+                        padding-right: 0.5em;
+                        align-items: center;
+                    }
                 }
             }
         }
