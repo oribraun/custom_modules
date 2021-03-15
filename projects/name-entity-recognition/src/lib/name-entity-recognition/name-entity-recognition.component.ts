@@ -1,6 +1,7 @@
 import {EventEmitter, Component, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {count} from 'rxjs/operators';
 import {NameEntityRecognitionService} from "../name-entity-recognition.service";
+import {style, trigger, state, transition, animate} from "@angular/animations";
 
 declare var document: any;
 @Component({
@@ -8,12 +9,22 @@ declare var document: any;
     templateUrl: './name-entity-recognition.component.html',
     styleUrls: ['./name-entity-recognition.component.less'],
     encapsulation: ViewEncapsulation.None,
+    animations: [
+        trigger('show-panel', [
+            state('true', style({height: '*', opacity: 1})),
+            state('false', style({height: 0, opacity: 0})),
+            transition('true <=> false', [
+                animate(300)
+            ])
+        ])
+    ]
 })
 export class NameEntityRecognitionComponent implements OnInit {
 
     @ViewChild('nameEntityRecognition') el;
     @Output() onSave: EventEmitter<any> = new EventEmitter<any>();
-    @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
+    // @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
+    @Input() text = '';
     @Input() entitiesTypes: any = [
         {
             name: 'first',
@@ -66,27 +77,28 @@ export class NameEntityRecognitionComponent implements OnInit {
     animatedModel = false;
     modalOpen = false;
     entityPositions: any = [
-        {
-            end_offset: 23,
-            recordIds: 'R1',
-            relationsIds: '',
-            id: 'E1',
-            entity_id: 1,
-            prob: 0,
-            start_offset: 0,
-        },
-        {
-            end_offset: 138,
-            recordIds: 'R1',
-            relationsIds: '',
-            id: 'E2',
-            entity_id: 2,
-            prob: 0.0,
-            start_offset: 121,
-        },
+        // {
+        //     end_offset: 23,
+        //     recordIds: 'R1',
+        //     relationsIds: '',
+        //     id: 'E1',
+        //     entity_id: 1,
+        //     prob: 0,
+        //     start_offset: 0,
+        // },
+        // {
+        //     end_offset: 138,
+        //     recordIds: 'R1',
+        //     relationsIds: '',
+        //     id: 'E2',
+        //     entity_id: 2,
+        //     prob: 0.0,
+        //     start_offset: 121,
+        // },
 
     ];
     entitiesTypesMap:any = {};
+    showEntitiesMap = false;
     constructor(
         private nameEntityRecognitionService: NameEntityRecognitionService
     ) {
@@ -370,6 +382,8 @@ export class NameEntityRecognitionComponent implements OnInit {
             res.id = entity.id;
             res.entity_type = this.entitiesTypes[entityIndex].name;
             res.entity_id = this.entitiesTypes[entityIndex].id;
+            res.entity_color = this.entitiesTypes[entityIndex].text_color;
+            res.entity_background = this.entitiesTypes[entityIndex].background_color;
             res.start_index = entity.start_offset;
             res.end_index = entity.end_offset;
         }
@@ -535,9 +549,12 @@ export class NameEntityRecognitionComponent implements OnInit {
     }
 
     getNextId(arr, prefix?) {
-        let id = arr.reduce((r,o) => {
-            return r < o ? o : r;
-        });
+        let id = 0;
+        if(arr.length) {
+            id = arr.reduce((r, o) => {
+                return r < o ? o : r;
+            });
+        }
         id = parseInt(id.toString().replace(/^[^0-9]+/, ''), 0);
         console.log('id', id)
         id++;
@@ -547,6 +564,9 @@ export class NameEntityRecognitionComponent implements OnInit {
         return id;
     }
 
+    toggleEntitiesMap() {
+        this.showEntitiesMap = !this.showEntitiesMap;
+    }
     randomColors(t)
     {
         t = parseInt(t);

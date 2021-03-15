@@ -1,10 +1,10 @@
 <div class="name-entity-recognition">
     <div class="panel">
-        <header class="card-header">
+        <header class="panel-header">
             <div class="field">
                 <div class="control" *ngFor="let record of records; let i = index">
                     <div class="tags has-addons" [ngClass]="{'selected': selectedEntities.indexOf(record.id) > -1}">
-                        <div class="shadow" (click)="selectRecord(record.id)"></div>
+                        <div class="record-shadow" (click)="selectRecord(record.id)"></div>
                         <a class="tag" (click)="selectRecord(record.id)" [ngStyle]="{'color': record.text_color, 'background-color': record.background_color}">
                             Record
                         </a>
@@ -34,7 +34,7 @@
         <!--        <h4>selected Entities</h4>-->
         <!--        <span *ngFor="let e of selectedEntities; let i = index">{{e}}<span *ngIf="i !== selectedEntities.length - 1">, </span></span>-->
         <!--    </div>-->
-        <div class="card-content">
+        <div class="panel-content">
             <div class="content">
                 <div (click)="setSelectedRange($event)" #nameEntityRecognition>
                     <!--                        <span class="label with-label-name" *ngFor="let r of chunks"-->
@@ -79,21 +79,45 @@
     <!--    </div>-->
     <!--    <h1>Real</h1>-->
     <!--    <div>{{text}}</div>-->
-    <div *ngFor="let item of entitiesTypesMap | keyvalue">
-        {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}
+    <div class="entities-type-button">
+        <div class="arrow" (click)="toggleEntitiesMap()"></div>
+    </div>
+    <div class="entities-type-map-wrapper"
+         [@show-panel]="showEntitiesMap ? 'true' : 'false'">
+        <div class="entities-type-map">
+            <div *ngFor="let item of entitiesTypesMap | keyvalue">
+                <div class="header">
+                    <div class="label with-title-tile"
+                         [ngStyle]="{ color: item.value.entity_color, backgroundColor: item.value.entity_background }"
+                         [attr.title]="item.value.entity_type">
+                        {{item.key}}
+                    </div>
+                </div>
+<!--                <h4><span style="border-bottom: 1px solid {{item.value.entity_background}}">{{item.key}}</span></h4>-->
+                <p>
+                    <b>Id</b> - {{item.value.id}},
+                    <b>Records</b> - {{item.value.records}},
+                    <b>relations ids</b> - {{item.value.relationsIds}},
+<!--                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,-->
+                    <b>start index</b> {{item.value.start_index}},
+                    <b>end index</b> {{item.value.end_index}}
+                </p>
+<!--                {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}-->
+            </div>
+        </div>
     </div>
 </div>
-<div class="modal fade" [ngClass]="{show: modalOpen}" *ngIf="animatedModel">
+<div class="relations-modal fade" [ngClass]="{show: modalOpen}" *ngIf="animatedModel">
     <div class="backdrop" (click)="close()"></div>
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLiveLabel">Relations - {{text.slice(currentRelationsEntity.start_offset, currentRelationsEntity.end_offset)}}</h5>
+    <div class="relations-modal-dialog">
+        <div class="relations-modal-content">
+            <div class="relations-modal-header">
+                <h5 class="relations-modal-title" id="exampleModalLiveLabel">Relations - {{text.slice(currentRelationsEntity.start_offset, currentRelationsEntity.end_offset)}}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="close()">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="relations-modal-body">
                 <div class="options-box">
                     <div class="item" *ngFor="let l of entityPositions">
                         <div class="options"
