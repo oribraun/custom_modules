@@ -198,7 +198,7 @@ export class NameEntityRecognitionComponent implements OnInit {
             ) {
 
             } else {
-                // return false;
+                return false;
             }
             // if ((e.start_offset <= this.startOffset) && (this.startOffset <= e.end_offset)) {
             //     return false;
