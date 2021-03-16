@@ -97,7 +97,7 @@ export class NameEntityRecognitionComponent implements OnInit {
         // },
 
     ];
-    entitiesTypesMap:any = {};
+    entitiesMap:any = {};
     showEntitiesMap = false;
     constructor(
         private nameEntityRecognitionService: NameEntityRecognitionService
@@ -198,7 +198,7 @@ export class NameEntityRecognitionComponent implements OnInit {
             ) {
 
             } else {
-                return false;
+                // return false;
             }
             // if ((e.start_offset <= this.startOffset) && (this.startOffset <= e.end_offset)) {
             //     return false;
@@ -312,7 +312,7 @@ export class NameEntityRecognitionComponent implements OnInit {
     //     this.chunks = [];
     //     const res = [];
     //     let left = 0;
-    //     const entitiesTypesMap = this.entitiesTypes.map((o) => o.id);
+    //     const entitiesMap = this.entitiesTypes.map((o) => o.id);
     //     const sortedPositions = this.sortedEntityPositions();
     //     for (let i = 0; i < sortedPositions.length; i++) {
     //         const e: any = sortedPositions[i];
@@ -325,7 +325,7 @@ export class NameEntityRecognitionComponent implements OnInit {
     //             currentEntity.id = e.id;
     //             currentEntity.entity_id = e.entity_id;
     //         }
-    //         const entityIndex = entitiesTypesMap.indexOf(currentEntity.entity);
+    //         const entityIndex = entitiesMap.indexOf(currentEntity.entity);
     //         if (entityIndex > -1) {
     //             currentEntity.real_entity = this.entitiesTypes[entityIndex];
     //         }
@@ -346,7 +346,7 @@ export class NameEntityRecognitionComponent implements OnInit {
     getChunks() {
         const res = [];
         let selectionPosition = 0;
-        const entitiesTypesMap = this.entitiesTypes.map((o) => o.id.toString());
+        const entitiesMap = this.entitiesTypes.map((o) => o.id.toString());
         const sortedPositions = this.sortedEntityPositions();
         for (let i = 0; i < sortedPositions.length; i++) {
             const e: any = sortedPositions[i];
@@ -354,7 +354,7 @@ export class NameEntityRecognitionComponent implements OnInit {
                 const chunk = this.createEntity(selectionPosition, e.start_offset);
                 res.push(chunk);
             }
-            this.addEntityTypeIfExist(entitiesTypesMap, e);
+            this.addEntityTypeIfExist(entitiesMap, e);
             res.push(e);
             selectionPosition = e.end_offset; // go to end of current entity
         }
@@ -364,8 +364,8 @@ export class NameEntityRecognitionComponent implements OnInit {
         return res;
     }
 
-    addEntityTypeIfExist(entitiesTypesMap, e) {
-        const entityIndex = entitiesTypesMap.indexOf(e.entity_id.toString());
+    addEntityTypeIfExist(entitiesMap, e) {
+        const entityIndex = entitiesMap.indexOf(e.entity_id.toString());
         if (entityIndex > -1) {
             // if this block already entityed
             e.entity_type = this.entitiesTypes[entityIndex];
@@ -375,8 +375,8 @@ export class NameEntityRecognitionComponent implements OnInit {
 
     addToEntityMap(entity) {
         const key = this.text.slice(entity.start_offset, entity.end_offset);
-        const entitiesTypesMap = this.entitiesTypes.map((o) => o.id.toString());
-        const entityIndex = entitiesTypesMap.indexOf(entity.entity_id.toString());
+        const entitiesMap = this.entitiesTypes.map((o) => o.id.toString());
+        const entityIndex = entitiesMap.indexOf(entity.entity_id.toString());
         const res: any = {records: entity.recordIds, relationsIds: entity.relationsIds}
         if(entityIndex > -1) {
             res.id = entity.id;
@@ -387,27 +387,27 @@ export class NameEntityRecognitionComponent implements OnInit {
             res.start_index = entity.start_offset;
             res.end_index = entity.end_offset;
         }
-        this.entitiesTypesMap[key] = res;
+        this.entitiesMap[key] = res;
     }
     rempveFromEntityMap(entity) {
         const key = this.text.slice(entity.start_offset, entity.end_offset);
-        delete this.entitiesTypesMap[key];
+        delete this.entitiesMap[key];
     }
     updateEntityEntities(entity) {
         const key = this.text.slice(entity.start_offset, entity.end_offset);
-        this.entitiesTypesMap[key].records = entity.recordIds;
+        this.entitiesMap[key].records = entity.recordIds;
     }
     updateEntityRelations(entity) {
         const key = this.text.slice(entity.start_offset, entity.end_offset);
-        this.entitiesTypesMap[key].relationsIds = entity.relationsIds;
+        this.entitiesMap[key].relationsIds = entity.relationsIds;
     }
     rempveRecordFromEntityMap(entity, entityId) {
         const key = this.text.slice(entity.start_offset, entity.end_offset);
-        const arr = this.entitiesTypesMap[key].records.split(',');
+        const arr = this.entitiesMap[key].records.split(',');
         const index = arr.indexOf(entityId);
         if(index > -1) {
             arr.splice(index, 1);
-            this.entitiesTypesMap[key].records = arr.join(',');
+            this.entitiesMap[key].records = arr.join(',');
 
         }
     }
@@ -426,7 +426,7 @@ export class NameEntityRecognitionComponent implements OnInit {
     // }
 
     // initAnnotations() {
-    //     const entitiesTypesMap = this.entitiesTypes.map((o) => o.id);
+    //     const entitiesMap = this.entitiesTypes.map((o) => o.id);
     //     for (const i in this.annotations) {
     //         const obj: any = this.annotations[i];
     //         const id = obj.id;
@@ -434,7 +434,7 @@ export class NameEntityRecognitionComponent implements OnInit {
     //         const entityId = obj.entity;
     //         const start_offset = obj.start_offset;
     //         const end_offset = obj.end_offset;
-    //         const entityIndex = entitiesTypesMap.indexOf(entityId);
+    //         const entityIndex = entitiesMap.indexOf(entityId);
     //         const entity = this.entitiesTypes[entityIndex];
     //         const entityBackground = entity.background_color;
     //         const entityColor = entity.text_color;
@@ -522,8 +522,8 @@ export class NameEntityRecognitionComponent implements OnInit {
 
     buildResults() {
         const results = {};
-        for(const entity_text in this.entitiesTypesMap) {
-            const text_annotation = this.entitiesTypesMap[entity_text];
+        for(const entity_text in this.entitiesMap) {
+            const text_annotation = this.entitiesMap[entity_text];
             const records = text_annotation.records.split(',');
             for(const j in records) {
                 if (!results[records[j]]) {
@@ -556,7 +556,7 @@ export class NameEntityRecognitionComponent implements OnInit {
             });
         }
         id = parseInt(id.toString().replace(/^[^0-9]+/, ''), 0);
-        console.log('id', id)
+        // console.log('id', id)
         id++;
         if(prefix) {
             id = prefix + id;
@@ -566,6 +566,10 @@ export class NameEntityRecognitionComponent implements OnInit {
 
     toggleEntitiesMap() {
         this.showEntitiesMap = !this.showEntitiesMap;
+    }
+
+    compareEntity(a: any, b: any) {
+        return 0;
     }
     randomColors(t)
     {

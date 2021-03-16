@@ -85,8 +85,8 @@
     <div class="entities-type-map-wrapper">
         <div class="entities-type-map-box"
              [@show-panel]="showEntitiesMap ? 'true' : 'false'">
-            <div class="entities-type-map">
-                <div *ngFor="let item of entitiesTypesMap | keyvalue">
+            <div class="entities-type-map" *ngIf="entityPositions.length">
+                <div *ngFor="let item of entitiesMap | keyvalue: compareEntity">
                     <div class="header">
                         <div class="label with-title-tile"
                              [ngStyle]="{ color: item.value.entity_color, backgroundColor: item.value.entity_background }"
@@ -105,6 +105,9 @@
                     </p>
     <!--                {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}-->
                 </div>
+            </div>
+            <div class="entities-type-map" *ngIf="!entityPositions.length">
+                    No Entities
             </div>
         </div>
     </div>
