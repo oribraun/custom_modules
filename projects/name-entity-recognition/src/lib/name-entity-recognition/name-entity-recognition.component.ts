@@ -79,15 +79,15 @@ export class NameEntityRecognitionComponent implements OnInit {
     animatedModel = false;
     modalOpen = false;
     entityPositions: any = [
-        {
-            id: 'E1',
-            prob: 0,
-            start_offset: 7,
-            end_offset: 14,
-            entity_id: '1',
-            recordIds: 'R1',
-            relationsIds: ''
-        }
+        // {
+        //     id: 'E1',
+        //     prob: 0,
+        //     start_offset: 7,
+        //     end_offset: 14,
+        //     entity_id: '1',
+        //     recordIds: 'R1',
+        //     relationsIds: ''
+        // }
     ];
     entitiesMap:any = [];
     showEntitiesMap = false;
