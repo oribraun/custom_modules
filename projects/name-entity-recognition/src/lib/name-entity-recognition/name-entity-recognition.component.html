@@ -36,7 +36,15 @@
         <!--    </div>-->
         <div class="panel-content">
             <div class="content">
-                <div (click)="setSelectedRange($event)" #nameEntityRecognition>
+                <div (mouseup)="setSelectedRange($event)" #nameEntityRecognition>
+                    <span (click)="openEntity(i)" class="char" *ngFor="let obj of charsMap; let i = index;"
+                    [ngClass]="obj.classes"
+                    [ngStyle]="{'background-color': obj.backgrounds, 'background': 'linear-gradient(' + obj.backgrounds + ')'}"><!--
+                    -->{{obj.char}}<!--
+                    --> <div (click)="removeEntitiesFromPositions(i + 1)" class="remove" *ngIf="obj.classes.indexOf('last') > -1">
+
+                    </div><!--
+                --></span>
                     <!--                        <span class="label with-label-name" *ngFor="let r of chunks"-->
                     <!--                             [ngClass]="{tag: r.entity && r.entity.text_color}"-->
                     <!--                             [ngStyle]="r.entity && { color: r.entity.text_color, backgroundColor: r.entity.background_color }"-->
@@ -46,15 +54,19 @@
                     <!--                                 (click)="removeEntity(r)">-->
                     <!--                            </div>-->
                     <!--                        </span>-->
-                    <span (click)="r.entity_type && open(r)" class="label with-title-tile {{r.entity_type && 'pointer'}}" *ngFor="let r of chunks"
-                          [ngClass]="{tag: r.entity_type && r.entity_type.text_color}"
-                          [ngStyle]="r.entity_type && { color: r.entity_type.text_color, backgroundColor: r.entity_type.background_color }"
-                          [attr.title]="r.entity_type && r.entity_type.name">{{text.slice(r.start_offset, r.end_offset)}}<!--
-                        --><div class="remove is-small"
-                                *ngIf="r.entity_type && r.entity_type.text_color"
-                                (click)="removeEntity(r)">
-                            </div>
-                        </span>
+<!--                    <span (click)="r.entity_type && open(r)" class="label with-title-tile {{r.entity_type && 'pointer'}}" *ngFor="let r of chunks"-->
+<!--                          [ngClass]="{tag: r.entity_type && r.entity_type.text_color, 'with-indent': r.indent}"-->
+<!--                          [ngStyle]="r.entity_type && { color: r.entity_type.text_color, backgroundColor: r.entity_type.background_color }"-->
+<!--                          [attr.start_offset]="r.start_offset"-->
+<!--                          [attr.end_offset]="r.end_offset"-->
+<!--                          [attr.indent_from]="r.indent_from"-->
+<!--                          [attr.indent]="r.indent"-->
+<!--                          [attr.title]="r.entity_type && r.entity_type.name">{{text.slice(r.start_offset, r.end_offset)}}&lt;!&ndash;-->
+<!--                        &ndash;&gt;<div class="remove is-small"-->
+<!--                                *ngIf="r.entity_type && r.entity_type.text_color"-->
+<!--                                (click)="removeEntity(r)">-->
+<!--                            </div>-->
+<!--                        </span>-->
                     <!--                <span *ngFor="let r of chunks">-->
                     <!--                    {{text.slice(r.start_offset, r.end_offset)}}-->
                     <!--                </span>-->
@@ -86,22 +98,22 @@
         <div class="entities-type-map-box"
              [@show-panel]="showEntitiesMap ? 'true' : 'false'">
             <div class="entities-type-map" *ngIf="entityPositions.length">
-                <div *ngFor="let item of entitiesMap | keyvalue: compareEntity">
+                <div *ngFor="let item of entitiesMap">
                     <div class="header">
                         <div class="label with-title-tile"
-                             [ngStyle]="{ color: item.value.entity_color, backgroundColor: item.value.entity_background }"
-                             [attr.title]="item.value.entity_type">
+                             [ngStyle]="{ color: item.res.entity_color, backgroundColor: item.res.entity_background }"
+                             [attr.title]="item.res.entity_type">
                             {{item.key}}
                         </div>
                     </div>
     <!--                <h4><span style="border-bottom: 1px solid {{item.value.entity_background}}">{{item.key}}</span></h4>-->
                     <p>
-                        <b>Id</b> - {{item.value.id}},
-                        <b>Records</b> - {{item.value.records}},
-                        <b>relations ids</b> - {{item.value.relationsIds}},
+                        <b>Id</b> - {{item.res.id}},
+                        <b>Records</b> - {{item.res.records}},
+                        <b>relations ids</b> - {{item.res.relationsIds}},
     <!--                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,-->
-                        <b>start index</b> {{item.value.start_index}},
-                        <b>end index</b> {{item.value.end_index}}
+                        <b>start index</b> {{item.res.start_index}},
+                        <b>end index</b> {{item.res.end_index}}
                     </p>
     <!--                {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}-->
                 </div>

@@ -1,7 +1,7 @@
 import {EventEmitter, Component, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {count} from 'rxjs/operators';
-import {NameEntityRecognitionService} from "../name-entity-recognition.service";
-import {style, trigger, state, transition, animate} from "@angular/animations";
+import {NameEntityRecognitionService} from '../name-entity-recognition.service';
+import {style, trigger, state, transition, animate} from '@angular/animations';
 
 declare var document: any;
 @Component({
@@ -57,10 +57,12 @@ export class NameEntityRecognitionComponent implements OnInit {
             // text_color: '#ffffff',
         },
     ];
+    charsMap = [];
     colors = [];
     startOffset = 0;
     endOffset = 0;
     chunks: any[] = [];
+    textIndent = {}
     // entityPositions = [{startOffset: 10, endOffset: 15, entity_id: 1}];
     recordIdPrefix = 'R';
     entityIdPrefix = 'E';
@@ -77,27 +79,17 @@ export class NameEntityRecognitionComponent implements OnInit {
     animatedModel = false;
     modalOpen = false;
     entityPositions: any = [
-        // {
-        //     end_offset: 23,
-        //     recordIds: 'R1',
-        //     relationsIds: '',
-        //     id: 'E1',
-        //     entity_id: 1,
-        //     prob: 0,
-        //     start_offset: 0,
-        // },
-        // {
-        //     end_offset: 138,
-        //     recordIds: 'R1',
-        //     relationsIds: '',
-        //     id: 'E2',
-        //     entity_id: 2,
-        //     prob: 0.0,
-        //     start_offset: 121,
-        // },
-
+        {
+            id: 'E1',
+            prob: 0,
+            start_offset: 7,
+            end_offset: 14,
+            entity_id: '1',
+            recordIds: 'R1',
+            relationsIds: ''
+        }
     ];
-    entitiesMap:any = {};
+    entitiesMap:any = [];
     showEntitiesMap = false;
     constructor(
         private nameEntityRecognitionService: NameEntityRecognitionService
@@ -109,8 +101,169 @@ export class NameEntityRecognitionComponent implements OnInit {
         // const colors = this.randomColors(this.entitiesTypes.length)
         // colors = colors.sort( () => .5 - Math.random();
         this.generateEntities(this.colors);
-        this.chunks = this.getChunks();
+        this.setCharsMap();
+        this.initPositions();
+        // this.chunks = this.getChunks();
         // this.initAnnotations();
+    }
+
+    setCharsMap() {
+        this.charsMap = [];
+        for(let i = 0; i < this.text.length; i++) {
+            this.charsMap.push({
+                char: this.text[i],
+                entities: '',
+                classes: '',
+                colors: '',
+                backgrounds: ''
+            })
+        }
+    }
+
+    initPositions() {
+        for (const i in this.entityPositions) {
+            const entitiesMap = this.entitiesTypes.map((o) => o.id.toString());
+            const entityIndex = entitiesMap.indexOf(this.entityPositions[i].entity_id.toString());
+            if(entityIndex > -1) {
+                const entity_type = this.entitiesTypes[entityIndex];
+                const start = this.entityPositions[i].start_offset;
+                const end = this.entityPositions[i].end_offset;
+                this.entityPositions[i].entity_type = entity_type;
+                this.addEntityToCharsMap(entity_type, this.entityPositions[i].id, start, end);
+                this.addToEntityMap(this.entityPositions[i]);
+            }
+        }
+    }
+
+    addEntityToCharsMap(entity, entity_id, start, end) {
+        let cls = '';
+        for(let i = start; i < end; i++) {
+            if(i === start) {
+                cls = 'first'
+            } else if (i === end - 1) {
+                cls = 'last'
+            } else {
+                cls = '';
+            }
+            // if(this.charsMap[i].entities.indexOf(entity.id) === -1) {
+                const charsMap: any = {...this.charsMap[i]};
+                const entities = charsMap.entities ? charsMap.entities.split(',') : [];
+                entities.push(entity.id);
+                charsMap.entities = entities.join(',')
+                // const colors = charsMap.colors ? charsMap.colors.split(',') : [];
+                // colors.push(entity.background_color);
+                // charsMap.colors = colors.join(',');
+                if(!charsMap.backgrounds) {
+                    charsMap.backgrounds = [];
+                }
+                if(!charsMap.colors) {
+                    charsMap.colors = [];
+                }
+                charsMap.backgrounds.push(entity.background_color);
+                charsMap.colors.push(entity.text_color);
+                const classes = charsMap.classes ? charsMap.classes.split(' ') : [];
+                classes.push('labeled');
+                if(cls) {
+                    classes.push(entity.id + '_' + entity_id + '_' + cls);
+                    if(start === end - 1) {
+                        classes.push(entity.id + '_' + entity_id + '_last');
+                    }
+                }
+                charsMap.classes = classes.join(' ')
+                this.charsMap[i] = charsMap;
+            // }
+            // console.log(this.charsMap, this.charsMap)
+        }
+    }
+
+    removeEntityFromCharsMap(entity, entity_id, start, end) {
+        for(let i = start; i < end; i++) {
+            if(this.charsMap[i].entities.indexOf(entity.id) > -1) {
+                const entities = this.charsMap[i].entities.split(',');
+                const index = entities.indexOf(entity.id);
+                if(index > -1) {
+                    const charsMap: any = {...this.charsMap[i]};
+                    entities.splice(index, 1);
+                    // if(entities.indexOf(entity.id) === -1) {
+                        // const colors = charsMap.colors.split('),');
+                        const bgColorIndex = charsMap.backgrounds.indexOf(entity.background_color);
+                        if(bgColorIndex > -1) {
+                            charsMap.backgrounds.splice(bgColorIndex, 1);
+                        }
+                        const colorIndex = charsMap.colors.indexOf(entity.text_color);
+                        if(colorIndex > -1) {
+                            charsMap.colors.splice(colorIndex, 1);
+                        }
+                        // console.log('charsMap.colors', charsMap.colors)
+                        // console.log('charsMap.classes', charsMap.classes)
+                        const classes = charsMap.classes.split(' ');
+                        const lastIndex = classes.indexOf(entity.id + '_' + entity_id + '_last');
+                        const firstIndex = classes.indexOf(entity.id + '_' + entity_id + '_first');
+                        // console.log('lastIndex', lastIndex)
+                        // console.log('firstIndex', firstIndex)
+                        if(lastIndex > -1) {
+                            classes.splice(lastIndex, 1);
+                            charsMap.classes = classes.join(' ');
+                        }
+                        if(firstIndex > -1) {
+                            classes.splice(firstIndex, 1);
+                            charsMap.classes = classes.join(' ');
+                        }
+                        const labeledIndex = classes.indexOf('labeled');
+                        if(labeledIndex > -1) {
+                            classes.splice(labeledIndex, 1);
+                            charsMap.classes = classes.join(' ');
+                        }
+                    // }
+                    charsMap.entities = entities.join(',');
+                    this.charsMap[i] = charsMap;
+                }
+            }
+        }
+        // this.setCharsMap();
+        // this.initPositions();
+    }
+
+    addEntityToPositions(entity) {
+        const entitiesMap = this.entityPositions.map((o) => o.id.toString());
+        const nextId = this.getNextId(entitiesMap);
+        const position = {
+            id: this.entityIdPrefix + nextId,
+            prob: 0.0,
+            start_offset: this.startOffset,
+            end_offset: this.endOffset,
+            entity_id: entity.id,
+            entity_type: entity,
+            recordIds: this.selectedEntities.join(','),
+            relationsIds: ''
+        };
+        this.entityPositions.push(position);
+
+        // console.log('this.entityPositions', this.entityPositions)
+        this.addToEntityMap(position);
+        return position;
+    }
+
+    removeEntitiesFromPositions(last) {
+        const sort = this.entityPositions.sort((a, b) => {
+            return a.id > b.id ? -1 : 1;
+        });
+        const map = sort.map((o) => o.end_offset);
+        const index = map.indexOf(last);
+        if(index > -1) {
+            const entityToRemove = this.entityPositions[index];
+            this.entityPositions.splice(index, 1);
+            this.removeFromEntityMap(entityToRemove);
+            const entitiesMap = this.entitiesTypes.map((o) => o.id.toString());
+            const entityIndex = entitiesMap.indexOf(entityToRemove.entity_id.toString());
+            if(entityIndex > -1) {
+                this.removeEntityFromCharsMap(this.entitiesTypes[entityIndex], entityToRemove.id, entityToRemove.start_offset, entityToRemove.end_offset);
+            }
+        }
+        // console.log('sort', sort)
+        // console.log('map', map)
+        // console.log('index', index);
+        // console.log('last', last);
     }
 
     generateEntities(colors) {
@@ -144,6 +297,8 @@ export class NameEntityRecognitionComponent implements OnInit {
             const range = window.getSelection().getRangeAt(0);
             const preSelectionRange = range.cloneRange();
             preSelectionRange.selectNodeContents(this.el.nativeElement);
+            // console.log('range', range)
+            // console.log('preSelectionRange', preSelectionRange)
             preSelectionRange.setEnd(range.startContainer, range.startOffset);
             start = preSelectionRange.toString().length;
             end = start + range.toString().length;
@@ -157,27 +312,64 @@ export class NameEntityRecognitionComponent implements OnInit {
         }
         this.startOffset = start;
         this.endOffset = end;
-        console.log(start, end);
-        if(this.currentEntity) {
-            this.addEntity(this.currentEntity.id);
+        // console.log(start, end);
+        if(this.currentEntity && start < end) {
+            const newPos = this.addEntityToPositions(this.currentEntity);
+            this.addEntityToCharsMap(this.currentEntity, newPos.id, start, end);
+            this.clearSelection();
+            // this.addEntity(this.currentEntity.id);
         }
     }
 
+    clearSelection() {
+        if (window.getSelection) {
+            if (window.getSelection().empty) {  // Chrome
+                window.getSelection().empty();
+            } else if (window.getSelection().removeAllRanges) {  // Firefox
+                window.getSelection().removeAllRanges();
+            }
+        } else if (document.selection) {  // IE?
+            document.selection.empty();
+        }
+    }
+
+    openEntity(charIndex) {
+        const sort = this.entityPositions.sort((a, b) => {
+            return a.id > b.id ? -1 : 1;
+        });
+        let index = -1;
+        for(const i in sort) {
+            if(sort[i].start_offset <= charIndex && sort[i].end_offset >= charIndex) {
+                index = parseInt(i,0)
+                break;
+            }
+        }
+        if(index > -1) {
+            const currentEntity = this.entityPositions[index];
+            if(this.startOffset === this.endOffset) {
+                this.currentRelationsEntity = currentEntity;
+                this.animatedModel = true;
+                setTimeout(() => {
+                    this.modalOpen = true;
+                })
+            }
+        }
+    }
     mouseUp(e) {
         const sel = window.getSelection().getRangeAt(0);
         console.log('sel', sel)
         const parent = sel.startContainer.parentNode;
-        var start = window.getSelection().anchorOffset;
-        var end = window.getSelection().focusOffset;
+        const start = window.getSelection().anchorOffset;
+        const end = window.getSelection().focusOffset;
         if (start < end) {
-            var start = window.getSelection().anchorOffset;
-            var end = window.getSelection().focusOffset;
+            const start = window.getSelection().anchorOffset;
+            const end = window.getSelection().focusOffset;
         } else {
-            var start = window.getSelection().focusOffset;
-            var end = window.getSelection().anchorOffset;
+            const start = window.getSelection().focusOffset;
+            const end = window.getSelection().anchorOffset;
         }
         console.log(window.getSelection().toString());
-        console.log(start + ", " + end);
+        console.log(start + ', ' + end);
     }
 
     validRange() {
@@ -198,7 +390,7 @@ export class NameEntityRecognitionComponent implements OnInit {
             ) {
 
             } else {
-                return false;
+                // return false;
             }
             // if ((e.start_offset <= this.startOffset) && (this.startOffset <= e.end_offset)) {
             //     return false;
@@ -221,13 +413,22 @@ export class NameEntityRecognitionComponent implements OnInit {
 
     addEntity(entityId) {
         if (this.validRange()) {
+            let indent = 0;
+            console.log('this.startOffset', this.startOffset)
+            console.log('this.textIndent', this.textIndent)
+            for( const pos in this.textIndent) {
+                if (parseInt(pos, 0) <= this.startOffset) {
+                    indent += this.textIndent[pos];
+                }
+            }
+            console.log('indent before add', indent)
             const entitiesMap = this.entityPositions.map((o) => o.id.toString());
             const nextId = this.getNextId(entitiesMap);
             const entity = {
                 id: this.entityIdPrefix + nextId,
                 prob: 0.0,
-                start_offset: this.startOffset,
-                end_offset: this.endOffset,
+                start_offset: this.startOffset + indent,
+                end_offset: this.endOffset + indent,
                 entity_id: entityId,
                 recordIds: this.selectedEntities.join(','),
                 relationsIds: ''
@@ -239,28 +440,36 @@ export class NameEntityRecognitionComponent implements OnInit {
     }
 
     onAddedEntity() {
+        this.entitiesMap = [];
         this.chunks = this.getChunks();
     }
 
     removeEntity(entity) {
         console.log('entity', entity);
-        const entitiesMap = this.entityPositions.map((o) => o.start_offset);
-        const entityIndex = entitiesMap.indexOf(entity.start_offset);
+        const entitiesMap = this.entityPositions.map((o) => o.id);
+        const entityIndex = entitiesMap.indexOf(entity.id);
         if (entityIndex > -1) {
-            // const entity = this.entityPositions[entityIndex];
+            // const e = this.entityPositions[entityIndex];
+            // console.log('this.textIndent[entity.indent_from]', this.textIndent[entity.indent_from])
+            // console.log('entity.indent', entity.indent)
+            if (entity.indent_from) {
+                this.textIndent[entity.indent_from] -= entity.indent;
+            }
             this.entityPositions.splice(entityIndex, 1);
-            this.rempveFromEntityMap(entity);
+            this.removeFromEntityMap(entity);
             this.onAddedEntity();
         }
         // this.$emit('remove-entity', index);
     }
 
     open(entity) {
-        this.currentRelationsEntity = entity;
-        this.animatedModel = true;
-        setTimeout(() => {
-            this.modalOpen = true;
-        })
+        if(this.startOffset === this.endOffset) {
+            this.currentRelationsEntity = entity;
+            this.animatedModel = true;
+            setTimeout(() => {
+                this.modalOpen = true;
+            })
+        }
     }
 
     close() {
@@ -345,20 +554,50 @@ export class NameEntityRecognitionComponent implements OnInit {
 
     getChunks() {
         const res = [];
-        let selectionPosition = 0;
+        let selectionStartPosition = 0;
+        let selectionEndPosition = 0;
         const entitiesMap = this.entitiesTypes.map((o) => o.id.toString());
         const sortedPositions = this.sortedEntityPositions();
+        for (const i in this.textIndent) {
+            this.textIndent[i] = 0;
+        }
         for (let i = 0; i < sortedPositions.length; i++) {
             const e: any = sortedPositions[i];
-            if(selectionPosition < e.start_offset) {
-                const chunk = this.createEntity(selectionPosition, e.start_offset);
-                res.push(chunk);
+            let indent = 0;
+            if(e.start_offset <= selectionEndPosition) {
+                indent = e.end_offset - e.start_offset
+                if(e.end_offset <= selectionEndPosition) {
+                    console.log('on middle')
+                    indent = indent + (selectionEndPosition - e.end_offset);
+                }
+                console.log('indent', indent)
+                const from = selectionEndPosition;
+                console.log('form', from);
+                if(!this.textIndent[from]) {
+                    this.textIndent[from] = 0;
+                    // this.textIndent[from + (e.end_offset - e.start_offset)] = 0;
+                }
+                console.log('from + e.end_offset', from + (e.end_offset - e.start_offset))
+                this.textIndent[from] += indent;
+                // this.textIndent[from + (e.end_offset - e.start_offset)] -= (indent - (e.end_offset - e.start_offset));
+                console.log('e.end_offset', e.end_offset)
+                console.log('this.textIndent[from]', this.textIndent[from])
+                e.indent = indent;
+                e.indent_from = from;
             }
+            console.log('e', e)
+            // if(selectionEndPosition < e.start_offset) {
+                const chunk: any = this.createEntity(selectionEndPosition, e.start_offset);
+                res.push(chunk);
+            // }
             this.addEntityTypeIfExist(entitiesMap, e);
             res.push(e);
-            selectionPosition = e.end_offset; // go to end of current entity
+            // if(selectionEndPosition <= e.end_offset) {
+                selectionEndPosition = e.end_offset; // go to end of current entity
+            // }
+            selectionStartPosition = e.start_offset; // go to end of current entity
         }
-        const l = this.createEntity(selectionPosition, this.text.length);
+        const l = this.createEntity(selectionEndPosition, this.text.length);
         res.push(l);
 
         return res;
@@ -377,7 +616,7 @@ export class NameEntityRecognitionComponent implements OnInit {
         const key = this.text.slice(entity.start_offset, entity.end_offset);
         const entitiesMap = this.entitiesTypes.map((o) => o.id.toString());
         const entityIndex = entitiesMap.indexOf(entity.entity_id.toString());
-        const res: any = {records: entity.recordIds, relationsIds: entity.relationsIds}
+        const res: any = {records: entity.recordIds, relationsIds: entity.relationsIds};
         if(entityIndex > -1) {
             res.id = entity.id;
             res.entity_type = this.entitiesTypes[entityIndex].name;
@@ -387,28 +626,56 @@ export class NameEntityRecognitionComponent implements OnInit {
             res.start_index = entity.start_offset;
             res.end_index = entity.end_offset;
         }
-        this.entitiesMap[key] = res;
+        this.entitiesMap.push({key, id: entity.id, res});
     }
-    rempveFromEntityMap(entity) {
-        const key = this.text.slice(entity.start_offset, entity.end_offset);
-        delete this.entitiesMap[key];
+    removeFromEntityMap(entity) {
+        // const key = this.text.slice(entity.start_offset, entity.end_offset);
+        const map = this.entitiesMap.map((o) => o.id);
+        const index = map.indexOf(entity.id);
+        if(index > -1) {
+            this.entitiesMap.splice(index, 1);
+        }
+        // delete this.entitiesMap[key];
     }
     updateEntityEntities(entity) {
-        const key = this.text.slice(entity.start_offset, entity.end_offset);
-        this.entitiesMap[key].records = entity.recordIds;
+        const map = this.entitiesMap.map((o) => o.id);
+        const index = map.indexOf(entity.id);
+        if(index > -1) {
+            this.entitiesMap[index].records = entity.recordIds;
+        }
+        // const key = this.text.slice(entity.start_offset, entity.end_offset);
+        // this.entitiesMap[key].records = entity.recordIds;
     }
     updateEntityRelations(entity) {
-        const key = this.text.slice(entity.start_offset, entity.end_offset);
-        this.entitiesMap[key].relationsIds = entity.relationsIds;
+        const map = this.entitiesMap.map((o) => o.id);
+        const index = map.indexOf(entity.id);
+        if(index > -1) {
+            this.entitiesMap[index].res.relationsIds = entity.relationsIds;
+        }
+        // const key = this.text.slice(entity.start_offset, entity.end_offset);
+        // this.entitiesMap[key].relationsIds = entity.relationsIds;
     }
     rempveRecordFromEntityMap(entity, entityId) {
-        const key = this.text.slice(entity.start_offset, entity.end_offset);
-        const arr = this.entitiesMap[key].records.split(',');
-        const index = arr.indexOf(entityId);
-        if(index > -1) {
-            arr.splice(index, 1);
-            this.entitiesMap[key].records = arr.join(',');
+        // const key = this.text.slice(entity.start_offset, entity.end_offset);
+        // const arr = this.entitiesMap[key].records.split(',');
+        // const index = arr.indexOf(entityId);
+        // if(index > -1) {
+        //     arr.splice(index, 1);
+        //     this.entitiesMap[key].records = arr.join(',');
+        //
+        // }
 
+        const map = this.entitiesMap.map((o) => o.id);
+        const index = map.indexOf(entity.id);
+        if(index > -1) {
+            const e = this.entitiesMap[index].records;
+            const arr = e.records.split(',');
+            const i = arr.indexOf(entityId);
+            if(i > -1) {
+                arr.splice(i, 1);
+                e.records = arr.join(',');
+
+            }
         }
     }
     // id2entity() {
@@ -522,23 +789,23 @@ export class NameEntityRecognitionComponent implements OnInit {
 
     buildResults() {
         const results = {};
-        for(const entity_text in this.entitiesMap) {
-            const text_annotation = this.entitiesMap[entity_text];
-            const records = text_annotation.records.split(',');
+        for(const i in this.entitiesMap) {
+            const text_annotation = this.entitiesMap[i];
+            const records = text_annotation.res.records.split(',');
             for(const j in records) {
                 if (!results[records[j]]) {
                     results[records[j]] = {};
                 }
-                if (!results[records[j]][text_annotation.entity_type]) {
-                    results[records[j]][text_annotation.entity_type] = [];
+                if (!results[records[j]][text_annotation.res.entity_type]) {
+                    results[records[j]][text_annotation.res.entity_type] = [];
                 }
-                if (entity_text) {
-                    results[records[j]][text_annotation.entity_type].push({
-                        text: entity_text,
+                if (text_annotation.key) {
+                    results[records[j]][text_annotation.res.entity_type].push({
+                        text: text_annotation.key,
                         // id: text_annotation.id,
-                        relationsIds: text_annotation.relationsIds,
-                        start_index: text_annotation.start_index,
-                        end_index: text_annotation.end_index
+                        relationsIds: text_annotation.res.relationsIds,
+                        start_index: text_annotation.res.start_index,
+                        end_index: text_annotation.res.end_index
                     })
                 }
 
