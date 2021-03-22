@@ -155,7 +155,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         const buttonsHeight = this.buttons.nativeElement.clientHeight;
         this.panel.nativeElement.style.paddingTop = headerHeight + 'px';
         this.panel.nativeElement.style.paddingBottom = buttonsHeight + 'px';
-        this.panel.nativeElement.style.height = (parentHeight - headerHeight - buttonsHeight) + 'px';
+        this.content.nativeElement.style.height = (parentHeight - headerHeight - buttonsHeight) + 'px';
         // this.content.nativeElement.style.height = (panelHeight - headerHeight - buttonsHeight) + 'px';
         // this.content.nativeElement.style.height = headerHeight + 'px';
         // console.log('headerHeight', headerHeight)
