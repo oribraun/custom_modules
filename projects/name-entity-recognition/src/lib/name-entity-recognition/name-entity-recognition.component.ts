@@ -810,11 +810,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
         // delete this.entitiesMap[key];
     }
-    updateEntityEntities(entity) {
+    updateEntityRecords(entity) {
         const map = this.entitiesMap.map((o) => o.id);
         const index = map.indexOf(entity.id);
         if(index > -1) {
-            this.entitiesMap[index].records = entity.recordIds;
+            this.entitiesMap[index].res.records = entity.recordIds;
         }
         // const key = this.text.slice(entity.start_offset, entity.end_offset);
         // this.entitiesMap[key].records = entity.recordIds;
@@ -924,14 +924,14 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
 
-    removeRecordFromEntities(entityId) {
+    removeRecordFromEntities(recordId) {
         for (const i in this.entityPositions) {
-            const arr = this.entityPositions[i].recordIds.split(',').map( Number );
-            const index = arr.indexOf(entityId);
+            const arr = this.entityPositions[i].recordIds.split(',').map( String );
+            const index = arr.indexOf(recordId.toString());
             if(index > -1) {
                 arr.splice(index, 1);
                 this.entityPositions[i].recordIds = arr.join(',');
-                this.updateEntityEntities(this.entityPositions[i])
+                this.updateEntityRecords(this.entityPositions[i])
 
             }
         }
