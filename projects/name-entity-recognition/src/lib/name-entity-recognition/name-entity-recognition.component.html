@@ -1,6 +1,6 @@
 <div class="name-entity-recognition">
-    <div class="panel">
-        <header class="panel-header">
+    <div class="panel" #panel>
+        <header class="panel-header" #header>
             <div class="field">
                 <div class="control" *ngFor="let record of records; let i = index">
                     <div class="tags has-addons" [ngClass]="{'selected': selectedEntities.indexOf(record.id) > -1}">
@@ -34,11 +34,14 @@
         <!--        <h4>selected Entities</h4>-->
         <!--        <span *ngFor="let e of selectedEntities; let i = index">{{e}}<span *ngIf="i !== selectedEntities.length - 1">, </span></span>-->
         <!--    </div>-->
-        <div class="panel-content">
+        <div class="panel-content" #content>
             <div class="content">
-                <div (mouseup)="setSelectedRange($event)" #nameEntityRecognition>
+                <div (mouseup)="setSelectedRange($event)" #nameEntityRecognition *ngIf="charsMap.length && !charsMapInProgress">
                     <span (click)="openEntity(i)" class="char" *ngFor="let obj of charsMap; let i = index;"
                     [ngClass]="obj.classes"
+                    [class.endTag]="obj.endTag"
+                    [class.startTag]="obj.startTag && i !== 0"
+                    [attr.show]="obj.show"
                     [ngStyle]="{'background-color': obj.backgrounds, 'background': 'linear-gradient(' + obj.backgrounds + ')'}"><!--
                     -->{{obj.char}}<!--
                     --> <div (click)="removeEntitiesFromPositions(i + 1)" class="remove" *ngIf="obj.classes.indexOf('last') > -1">
@@ -80,10 +83,12 @@
                     <!--                        </button>-->
                     <!--                    </span>-->
                 </div>
+                <div *ngIf="charsMapInProgress">Loading</div>
             </div>
         </div>
-        <div class="buttons">
+        <div class="buttons" #buttons>
             <button (click)="save()">Save</button>
+            <button (click)="showResults()">Show Entities</button>
         </div>
     </div>
     <!--    <div>-->
@@ -91,45 +96,45 @@
     <!--    </div>-->
     <!--    <h1>Real</h1>-->
     <!--    <div>{{text}}</div>-->
-    <div class="entities-type-button">
-        <div class="arrow" (click)="toggleEntitiesMap()"></div>
-    </div>
-    <div class="entities-type-map-wrapper">
-        <div class="entities-type-map-box"
-             [@show-panel]="showEntitiesMap ? 'true' : 'false'">
-            <div class="entities-type-map" *ngIf="entityPositions.length">
-                <div *ngFor="let item of entitiesMap">
-                    <div class="header">
-                        <div class="label with-title-tile"
-                             [ngStyle]="{ color: item.res.entity_color, backgroundColor: item.res.entity_background }"
-                             [attr.title]="item.res.entity_type">
-                            {{item.key}}
-                        </div>
-                    </div>
-    <!--                <h4><span style="border-bottom: 1px solid {{item.value.entity_background}}">{{item.key}}</span></h4>-->
-                    <p>
-                        <b>Id</b> - {{item.res.id}},
-                        <b>Records</b> - {{item.res.records}},
-                        <b>relations ids</b> - {{item.res.relationsIds}},
-    <!--                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,-->
-                        <b>start index</b> {{item.res.start_index}},
-                        <b>end index</b> {{item.res.end_index}}
-                    </p>
-    <!--                {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}-->
-                </div>
-            </div>
-            <div class="entities-type-map" *ngIf="!entityPositions.length">
-                    No Entities
-            </div>
-        </div>
-    </div>
+<!--    <div class="entities-type-button">-->
+<!--        <div class="arrow" (click)="toggleEntitiesMap()"></div>-->
+<!--    </div>-->
+<!--    <div class="entities-type-map-wrapper">-->
+<!--        <div class="entities-type-map-box"-->
+<!--             [@show-panel]="showEntitiesMap ? 'true' : 'false'">-->
+<!--            <div class="entities-type-map" *ngIf="entityPositions.length">-->
+<!--                <div *ngFor="let item of entitiesMap">-->
+<!--                    <div class="header">-->
+<!--                        <div class="label with-title-tile"-->
+<!--                             [ngStyle]="{ color: item.res.entity_color, backgroundColor: item.res.entity_background }"-->
+<!--                             [attr.title]="item.res.entity_type">-->
+<!--                            {{item.key}}-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--    &lt;!&ndash;                <h4><span style="border-bottom: 1px solid {{item.value.entity_background}}">{{item.key}}</span></h4>&ndash;&gt;-->
+<!--                    <p>-->
+<!--                        <b>Id</b> - {{item.res.id}},-->
+<!--                        <b>Records</b> - {{item.res.records}},-->
+<!--                        <b>relations ids</b> - {{item.res.relationsIds}},-->
+<!--    &lt;!&ndash;                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,&ndash;&gt;-->
+<!--                        <b>start index</b> {{item.res.start_index}},-->
+<!--                        <b>end index</b> {{item.res.end_index}}-->
+<!--                    </p>-->
+<!--    &lt;!&ndash;                {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}&ndash;&gt;-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="entities-type-map" *ngIf="!entityPositions.length">-->
+<!--                    No Entities-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
 </div>
 <div class="relations-modal fade" [ngClass]="{show: modalOpen}" *ngIf="animatedModel">
     <div class="backdrop" (click)="close()"></div>
     <div class="relations-modal-dialog">
         <div class="relations-modal-content">
             <div class="relations-modal-header">
-                <h5 class="relations-modal-title" id="exampleModalLiveLabel">Relations - {{text.slice(currentRelationsEntity.start_offset, currentRelationsEntity.end_offset)}}</h5>
+                <h5 class="relations-modal-title" id="relationsModal">Relations - {{text.slice(currentRelationsEntity.start_offset, currentRelationsEntity.end_offset)}}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="close()">
                     <span aria-hidden="true">×</span>
                 </button>
@@ -149,6 +154,49 @@
                                     {{text.slice(l.start_offset, l.end_offset)}}
                                 </label>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="entities-modal fade" [ngClass]="{show: showEntitiesMap}" *ngIf="animatedEntitiesModel">
+    <div class="backdrop" (click)="hideResults()"></div>
+    <div class="entities-modal-dialog">
+        <div class="entities-modal-content">
+            <div class="entities-modal-header">
+                <h5 class="entities-modal-title" id="entitiesModal">Entities</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="hideResults()">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="entities-modal-body">
+                <div class="entities-type-map-wrapper">
+                    <div class="entities-type-map-box">
+                        <div class="entities-type-map" *ngIf="entityPositions.length">
+                            <div *ngFor="let item of entitiesMap">
+                                <div class="header">
+                                    <div class="label with-title-tile"
+                                         [ngStyle]="{ color: item.res.entity_color, backgroundColor: item.res.entity_background }"
+                                         [attr.title]="item.res.entity_type">
+                                        {{item.key}}
+                                    </div>
+                                </div>
+                                <!--                <h4><span style="border-bottom: 1px solid {{item.value.entity_background}}">{{item.key}}</span></h4>-->
+                                <p>
+                                    <b>Id</b> - {{item.res.id}},
+                                    <b>Records</b> - {{item.res.records}},
+                                    <b>relations ids</b> - {{item.res.relationsIds}},
+                                    <!--                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,-->
+                                    <b>start index</b> {{item.res.start_index}},
+                                    <b>end index</b> {{item.res.end_index}}
+                                </p>
+                                <!--                {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}-->
+                            </div>
+                        </div>
+                        <div class="entities-type-map" *ngIf="!entityPositions.length">
+                            No Entities
                         </div>
                     </div>
                 </div>

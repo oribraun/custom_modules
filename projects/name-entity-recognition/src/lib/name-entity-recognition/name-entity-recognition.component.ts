@@ -1,4 +1,13 @@
-import {EventEmitter, Component, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {
+    EventEmitter,
+    Component,
+    Input,
+    OnInit,
+    Output,
+    ViewChild,
+    ViewEncapsulation,
+    AfterViewInit, HostListener, OnChanges, SimpleChanges
+} from '@angular/core';
 import {count} from 'rxjs/operators';
 import {NameEntityRecognitionService} from '../name-entity-recognition.service';
 import {style, trigger, state, transition, animate} from '@angular/animations';
@@ -19,45 +28,20 @@ declare var document: any;
         ])
     ]
 })
-export class NameEntityRecognitionComponent implements OnInit {
+export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, OnChanges {
 
     @ViewChild('nameEntityRecognition') el;
+    @ViewChild('panel') panel;
+    @ViewChild('header') header;
+    @ViewChild('content') content;
+    @ViewChild('buttons') buttons;
     @Output() onSave: EventEmitter<any> = new EventEmitter<any>();
     // @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
     @Input() text = '';
-    @Input() entitiesTypes: any = [
-        {
-            name: 'first',
-            // background_color: '#209cee',
-            // text_color: '#ffffff',
-        },
-        {
-            name: 'last',
-            // background_color: '#ffcc00',
-            // text_color: '#333333',
-        },
-        {
-            name: 'prefix',
-            // background_color: '#333333',
-            // text_color: '#ffffff',
-        },
-        {
-            name: 'address',
-            // background_color: '#33cc99',
-            // text_color: '#ffffff',
-        },
-        {
-            name: 'phones',
-            // background_color: '#ff3333',
-            // text_color: '#ffffff',
-        },
-        {
-            name: 'emails',
-            // background_color: '#9933ff',
-            // text_color: '#ffffff',
-        },
-    ];
+    @Input() entitiesTypes: any = [];
     charsMap = [];
+    charsMapInProgress = false;
+    charsMapTimeout: any;
     colors = [];
     startOffset = 0;
     endOffset = 0;
@@ -77,6 +61,7 @@ export class NameEntityRecognitionComponent implements OnInit {
     currentEntity: any = {};
     currentRelationsEntity: any = {};
     animatedModel = false;
+    animatedEntitiesModel = false;
     modalOpen = false;
     entityPositions: any = [
         // {
@@ -91,6 +76,8 @@ export class NameEntityRecognitionComponent implements OnInit {
     ];
     entitiesMap:any = [];
     showEntitiesMap = false;
+    onContentScroll = false;
+    onContentScrollTimeout;
     constructor(
         private nameEntityRecognitionService: NameEntityRecognitionService
     ) {
@@ -100,24 +87,210 @@ export class NameEntityRecognitionComponent implements OnInit {
     ngOnInit(): void {
         // const colors = this.randomColors(this.entitiesTypes.length)
         // colors = colors.sort( () => .5 - Math.random();
-        this.generateEntities(this.colors);
         this.setCharsMap();
         this.initPositions();
+        this.generateEntities(this.colors);
         // this.chunks = this.getChunks();
         // this.initAnnotations();
     }
 
-    setCharsMap() {
+    scrollPos = 0;
+    ColScroll(event: any) {
+        const pos = event.target.scrollTop;
+        this.scrollPos = Math.floor(pos / 132);
+    }
+
+    contentScroll() {
+        this.onContentScroll = true;
+        clearTimeout(this.onContentScrollTimeout);
+        this.onContentScrollTimeout = setTimeout(() => {
+            this.onContentScroll = false;
+        })
+    }
+
+    ngAfterViewInit(): void {
+        this.initFixedHeader();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if(changes.entitiesTypes && !changes.entitiesTypes.firstChange) {
+            this.resetPosAndMap();
+            this.resetChartMap();
+            // this.setCharsMap2(0, '', true);
+            // this.charsMapInProgress = true;
+            // this.setCharsMap2(0, '', true);
+            this.setCharsMap();
+            this.initPositions();
+            this.generateEntities(this.colors);
+            setTimeout(() => {
+                this.initFixedHeader();
+            })
+            // console.log('entitiesTypes' , this.entitiesTypes);
+            if(!changes.entitiesTypes.firstChange) {
+
+            }
+        }
+        if(changes.text && !changes.text.firstChange) {
+            this.resetPosAndMap();
+            this.resetChartMap();
+            this.setCharsMap();
+        }
+    }
+
+    resetPosAndMap() {
+        this.entityPositions = [];
+        this.entitiesMap = [];
+    }
+
+    @HostListener('window:resize', ['$event'])
+    onResize(event) {
+        this.initFixedHeader();
+    }
+
+
+    initFixedHeader() {
+        const parentHeight = this.panel.nativeElement.parentNode.clientHeight;
+        const panelHeight = this.panel.nativeElement.clientHeight;
+        const headerHeight = this.header.nativeElement.clientHeight;
+        const buttonsHeight = this.buttons.nativeElement.clientHeight;
+        this.panel.nativeElement.style.paddingTop = headerHeight + 'px';
+        this.panel.nativeElement.style.paddingBottom = buttonsHeight + 'px';
+        this.panel.nativeElement.style.height = (parentHeight - headerHeight - buttonsHeight) + 'px';
+        // this.content.nativeElement.style.height = (panelHeight - headerHeight - buttonsHeight) + 'px';
+        // this.content.nativeElement.style.height = headerHeight + 'px';
+        // console.log('headerHeight', headerHeight)
+    }
+
+    resetChartMap() {
+        clearTimeout(this.charsMapTimeout)
         this.charsMap = [];
-        for(let i = 0; i < this.text.length; i++) {
+    }
+    setCharsMap2(i, startChar, show) {
+        if(i < this.text.length - 1) {
+            let startTag = false;
+            let endTag = false;
+            if(!startChar) {
+                if (this.text[i] === '<') {
+                    startChar = this.text[i];
+                    show = false;
+                    startTag = true;
+                }
+            }
+            if(startChar) {
+                if (this.text[i] === '>') {
+                    endTag = true;
+                }
+            }
             this.charsMap.push({
                 char: this.text[i],
+                show: show,
+                startTag: startTag,
+                endTag: endTag,
                 entities: '',
                 classes: '',
                 colors: '',
                 backgrounds: ''
             })
+            if(startChar) {
+                if (this.text[i] === '>') {
+                    show = true;
+                    startChar = '';
+                }
+            }
+            i++;
+            this.charsMapTimeout = setTimeout(() => {
+                this.setCharsMap2(i, startChar, show);
+            })
+        } else {
+            this.charsMapInProgress = false;
+            this.initPositions();
         }
+    }
+    setCharsMap3(pos, startChar, show) {
+        const step = 1000;
+        if (pos < this.text.length - 1) {
+            for (let i = pos; i < pos + step; i++) {
+                let startTag = false;
+                let endTag = false;
+                if (!startChar) {
+                    if (this.text[i] === '<') {
+                        startChar = this.text[i];
+                        show = false;
+                        startTag = true;
+                    }
+                }
+                if (startChar) {
+                    if (this.text[i] === '>') {
+                        endTag = true;
+                    }
+                }
+                this.charsMap.push({
+                    char: this.text[i],
+                    show: show,
+                    startTag: startTag,
+                    endTag: endTag,
+                    entities: '',
+                    classes: '',
+                    colors: '',
+                    backgrounds: ''
+                })
+                if (startChar) {
+                    if (this.text[i] === '>') {
+                        show = true;
+                        startChar = '';
+                    }
+                }
+            }
+            pos = pos + step;
+            requestAnimationFrame(() => {
+                this.setCharsMap3(pos, startChar, show);
+            })
+        } else {
+            this.charsMapInProgress = false;
+            this.initPositions();
+        }
+    }
+
+    setCharsMap() {
+        this.charsMapInProgress = true;
+        this.charsMap = [];
+        setTimeout(() => {
+            let startChar = '';
+            let show = true;
+            for(let i = 0; i < this.text.length; i++) {
+                let startTag = false;
+                let endTag = false;
+                if(!startChar) {
+                    if (this.text[i] === '<') {
+                        startChar = this.text[i];
+                        show = false;
+                        startTag = true;
+                    }
+                }
+                if(startChar) {
+                    if (this.text[i] === '>') {
+                        endTag = true;
+                    }
+                }
+                this.charsMap.push({
+                    char: this.text[i],
+                    show: show,
+                    startTag: startTag,
+                    endTag: endTag,
+                    entities: '',
+                    classes: '',
+                    colors: '',
+                    backgrounds: ''
+                })
+                if(startChar) {
+                    if (this.text[i] === '>') {
+                        show = true;
+                        startChar = '';
+                    }
+                }
+            }
+            this.charsMapInProgress = false;
+        })
     }
 
     initPositions() {
@@ -785,6 +958,21 @@ export class NameEntityRecognitionComponent implements OnInit {
             results: this.buildResults()
         }
         this.onSave.emit(data);
+    }
+
+    showResults() {
+        this.animatedEntitiesModel = true;
+        setTimeout(() => {
+            this.showEntitiesMap = true;
+        })
+    }
+
+    hideResults() {
+        this.showEntitiesMap = false;
+        setTimeout(() => {
+            this.animatedEntitiesModel = false;
+            this.currentRelationsEntity = {};
+        }, 300)
     }
 
     buildResults() {

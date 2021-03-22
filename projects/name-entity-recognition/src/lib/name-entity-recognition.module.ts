@@ -1,11 +1,12 @@
 import { NgModule } from '@angular/core';
+import {CommonModule} from '@angular/common';
 import { NameEntityRecognitionComponent } from './name-entity-recognition/name-entity-recognition.component';
-import {CommonModule} from "@angular/common";
+import {LazyLoadingDirective} from './lazy-loading.directive';
 
 
 
 @NgModule({
-  declarations: [NameEntityRecognitionComponent],
+  declarations: [NameEntityRecognitionComponent, LazyLoadingDirective],
   imports: [
     CommonModule
   ],
