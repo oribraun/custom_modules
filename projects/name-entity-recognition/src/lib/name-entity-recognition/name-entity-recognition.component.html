@@ -3,7 +3,7 @@
         <header class="panel-header" #header>
             <div class="field">
                 <div class="control" *ngFor="let record of records; let i = index">
-                    <div class="tags has-addons" [ngClass]="{'selected': selectedEntities.indexOf(record.id) > -1}">
+                    <div class="tags has-addons" [ngClass]="{'selected': selectedRecords.indexOf(record.id) > -1}">
                         <div class="record-shadow" (click)="selectRecord(record.id)"></div>
                         <a class="tag" (click)="selectRecord(record.id)" [ngStyle]="{'color': record.text_color, 'background-color': record.background_color}">
                             Record
@@ -37,12 +37,20 @@
         <div class="panel-content" #content>
             <div class="content">
                 <div (mouseup)="setSelectedRange($event)" #nameEntityRecognition *ngIf="charsMap.length && !charsMapInProgress">
-                    <span (click)="openEntity(i)" class="char" *ngFor="let obj of charsMap; let i = index;"
+                    <span (mouseenter)="charHover($event, i)" (click)="openEntity(i)" class="char" *ngFor="let obj of charsMap; let i = index;"
                     [ngClass]="obj.classes"
                     [class.endTag]="obj.endTag"
                     [class.startTag]="obj.startTag && i !== 0"
                     [attr.show]="obj.show"
-                    [ngStyle]="{'background-color': obj.backgrounds, 'background': 'linear-gradient(' + obj.backgrounds + ')'}"><!--
+                    [attr.entityNames]="obj.entityNames"
+                    [attr.entityIds]="obj.entityIds"
+                    [attr.recordIds]="obj.recordIds"
+                    [attr.index]="i"
+                    [ngStyle]="{
+                    'background-color': obj.backgrounds,
+                    'background': 'linear-gradient(' + obj.backgrounds + ')',
+                    'color': obj.text_color
+                    }"><!--
                     -->{{obj.char}}<!--
                     --> <div (click)="removeEntitiesFromPositions(i + 1)" class="remove" *ngIf="obj.classes.indexOf('last') > -1">
 

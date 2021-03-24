@@ -39,6 +39,17 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     // @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
     @Input() text = '';
     @Input() entitiesTypes: any = [];
+    @Input() entityPositions: any = [
+        // {
+        //     id: 'E1',
+        //     prob: 0,
+        //     start_offset: 7,
+        //     end_offset: 14,
+        //     entity_id: '1',
+        //     recordIds: 'R1',
+        //     relationsIds: ''
+        // }
+    ];
     charsMap = [];
     charsMapInProgress = false;
     charsMapTimeout: any;
@@ -57,23 +68,12 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             text_color: '#ffffff',
         },
     ];
-    selectedEntities: any = [this.records[0].id];
+    selectedRecords: any = [this.records[0].id];
     currentEntity: any = {};
     currentRelationsEntity: any = {};
     animatedModel = false;
     animatedEntitiesModel = false;
     modalOpen = false;
-    entityPositions: any = [
-        // {
-        //     id: 'E1',
-        //     prob: 0,
-        //     start_offset: 7,
-        //     end_offset: 14,
-        //     entity_id: '1',
-        //     recordIds: 'R1',
-        //     relationsIds: ''
-        // }
-    ];
     entitiesMap:any = [];
     showEntitiesMap = false;
     onContentScroll = false;
@@ -87,9 +87,14 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     ngOnInit(): void {
         // const colors = this.randomColors(this.entitiesTypes.length)
         // colors = colors.sort( () => .5 - Math.random();
-        this.setCharsMap();
-        this.initPositions();
+        // this.setCharsMap();
+        // this.initPositions();
         this.generateEntities(this.colors);
+        this.charsMapInProgress = true;
+        setTimeout(() => {
+            this.setCharsMap();
+            this.initPositions();
+        })
         // this.chunks = this.getChunks();
         // this.initAnnotations();
     }
@@ -119,11 +124,14 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             // this.setCharsMap2(0, '', true);
             // this.charsMapInProgress = true;
             // this.setCharsMap2(0, '', true);
-            this.setCharsMap();
-            this.initPositions();
             this.generateEntities(this.colors);
+            this.charsMapInProgress = true;
             setTimeout(() => {
-                this.initFixedHeader();
+                this.setCharsMap();
+                this.initPositions();
+                setTimeout(() => {
+                    this.initFixedHeader();
+                })
             })
             // console.log('entitiesTypes' , this.entitiesTypes);
             if(!changes.entitiesTypes.firstChange) {
@@ -133,12 +141,25 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if(changes.text && !changes.text.firstChange) {
             this.resetPosAndMap();
             this.resetChartMap();
-            this.setCharsMap();
+            this.charsMapInProgress = true;
+            setTimeout(() => {
+                this.setCharsMap();
+                this.initPositions();
+            })
+        }
+        if(changes.entityPositions && !changes.entityPositions.firstChange) {
+            this.resetPosAndMap();
+            this.resetChartMap();
+            this.charsMapInProgress = true;
+            setTimeout(() => {
+                this.setCharsMap();
+                this.initPositions();
+            })
         }
     }
 
     resetPosAndMap() {
-        this.entityPositions = [];
+        // this.entityPositions = [];
         this.entitiesMap = [];
     }
 
@@ -150,6 +171,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
 
     initFixedHeader() {
         const parentHeight = this.panel.nativeElement.parentNode.clientHeight;
+        console.log('parentHeight', parentHeight)
         const panelHeight = this.panel.nativeElement.clientHeight;
         const headerHeight = this.header.nativeElement.clientHeight;
         const buttonsHeight = this.buttons.nativeElement.clientHeight;
@@ -187,8 +209,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 startTag: startTag,
                 endTag: endTag,
                 entities: '',
+                entityNames: '',
+                entityIds: '',
+                recordIds: '',
+                // recordIds: {},
+                // relationsIds: {},
                 classes: '',
-                colors: '',
+                text_color: '',
                 backgrounds: ''
             })
             if(startChar) {
@@ -230,8 +257,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     startTag: startTag,
                     endTag: endTag,
                     entities: '',
+                    entityNames: '',
+                    entityIds: '',
+                    recordIds: '',
+                    // recordIds: {},
+                    // relationsIds: {},
                     classes: '',
-                    colors: '',
+                    text_color: '',
                     backgrounds: ''
                 })
                 if (startChar) {
@@ -254,7 +286,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     setCharsMap() {
         this.charsMapInProgress = true;
         this.charsMap = [];
-        setTimeout(() => {
+        // setTimeout(() => {
             let startChar = '';
             let show = true;
             for(let i = 0; i < this.text.length; i++) {
@@ -278,8 +310,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     startTag: startTag,
                     endTag: endTag,
                     entities: '',
+                    entityNames: '',
+                    entityIds: '',
+                    recordIds: '',
+                    // recordIds: {},
+                    // relationsIds: {},
                     classes: '',
-                    colors: '',
+                    text_color: '',
                     backgrounds: ''
                 })
                 if(startChar) {
@@ -290,7 +327,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 }
             }
             this.charsMapInProgress = false;
-        })
+        // })
     }
 
     initPositions() {
@@ -302,13 +339,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 const start = this.entityPositions[i].start_offset;
                 const end = this.entityPositions[i].end_offset;
                 this.entityPositions[i].entity_type = entity_type;
-                this.addEntityToCharsMap(entity_type, this.entityPositions[i].id, start, end);
+                this.addEntityToCharsMap(entity_type, this.entityPositions[i], start, end);
                 this.addToEntityMap(this.entityPositions[i]);
             }
         }
     }
 
-    addEntityToCharsMap(entity, entity_id, start, end) {
+    addEntityToCharsMap(entity, posEntity, start, end) {
         let cls = '';
         for(let i = start; i < end; i++) {
             if(i === start) {
@@ -319,10 +356,22 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 cls = '';
             }
             // if(this.charsMap[i].entities.indexOf(entity.id) === -1) {
+            // console.log('posEntity', posEntity)
                 const charsMap: any = {...this.charsMap[i]};
                 const entities = charsMap.entities ? charsMap.entities.split(',') : [];
+                const entityNames = charsMap.entityNames ? charsMap.entityNames.split(',') : [];
+                const entityIds = charsMap.entityIds ? charsMap.entityIds.split(',') : [];
+                const recordIds = charsMap.recordIds ? charsMap.recordIds.split('\n') : [];
                 entities.push(entity.id);
+                entityNames.push(entity.name);
+                entityIds.push(posEntity.id);
+                recordIds.push(posEntity.id + ' (' + posEntity.recordIds + ')');
+                // charsMap.recordIds[posEntity.id] = posEntity.recordIds;
+                // charsMap.relationsIds[posEntity.id] = posEntity.relationsIds;
                 charsMap.entities = entities.join(',')
+                charsMap.entityNames = entityNames.join(',')
+                charsMap.entityIds = entityIds.join(',')
+                charsMap.recordIds = recordIds.join('\n')
                 // const colors = charsMap.colors ? charsMap.colors.split(',') : [];
                 // colors.push(entity.background_color);
                 // charsMap.colors = colors.join(',');
@@ -333,13 +382,15 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     charsMap.colors = [];
                 }
                 charsMap.backgrounds.push(entity.background_color);
-                charsMap.colors.push(entity.text_color);
+                // charsMap.colors.push(entity.text_color);
+                charsMap.text_color = this.nameEntityRecognitionService.generateTextColor(charsMap.backgrounds);
                 const classes = charsMap.classes ? charsMap.classes.split(' ') : [];
-                classes.push('labeled');
+                // classes.push('labeled');
+                classes.push('labeled_' + posEntity.id);
                 if(cls) {
-                    classes.push(entity.id + '_' + entity_id + '_' + cls);
+                    classes.push(entity.id + '_' + posEntity.id + '_' + cls);
                     if(start === end - 1) {
-                        classes.push(entity.id + '_' + entity_id + '_last');
+                        classes.push(entity.id + '_' + posEntity.id + '_last');
                     }
                 }
                 charsMap.classes = classes.join(' ')
@@ -349,29 +400,40 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
 
-    removeEntityFromCharsMap(entity, entity_id, start, end) {
+    removeEntityFromCharsMap(entity, posEntity, start, end) {
         for(let i = start; i < end; i++) {
             if(this.charsMap[i].entities.indexOf(entity.id) > -1) {
                 const entities = this.charsMap[i].entities.split(',');
+                const entityNames = this.charsMap[i].entityNames.split(',');
+                const entityIds = this.charsMap[i].entityIds.split(',');
+                const recordIds = this.charsMap[i].recordIds.split('\n');
                 const index = entities.indexOf(entity.id);
+                const nameIndex = entityNames.indexOf(entity.name);
+                const entityIndex = entityIds.indexOf(posEntity.id);
+                const recordIndex = recordIds.indexOf(posEntity.id + ' (' + posEntity.recordIds + ')');
                 if(index > -1) {
+                    // delete this.charsMap[i].recordIds[posEntity.id];
+                    // delete this.charsMap[i].relationsIds[posEntity.id];
                     const charsMap: any = {...this.charsMap[i]};
                     entities.splice(index, 1);
+                    entityNames.splice(nameIndex, 1);
+                    entityIds.splice(entityIndex, 1);
+                    recordIds.splice(recordIndex, 1);
                     // if(entities.indexOf(entity.id) === -1) {
                         // const colors = charsMap.colors.split('),');
                         const bgColorIndex = charsMap.backgrounds.indexOf(entity.background_color);
                         if(bgColorIndex > -1) {
                             charsMap.backgrounds.splice(bgColorIndex, 1);
                         }
-                        const colorIndex = charsMap.colors.indexOf(entity.text_color);
-                        if(colorIndex > -1) {
-                            charsMap.colors.splice(colorIndex, 1);
-                        }
+                        // const colorIndex = charsMap.colors.indexOf(entity.text_color);
+                        // if(colorIndex > -1) {
+                        //     charsMap.colors.splice(colorIndex, 1);
+                        // }
                         // console.log('charsMap.colors', charsMap.colors)
                         // console.log('charsMap.classes', charsMap.classes)
                         const classes = charsMap.classes.split(' ');
-                        const lastIndex = classes.indexOf(entity.id + '_' + entity_id + '_last');
-                        const firstIndex = classes.indexOf(entity.id + '_' + entity_id + '_first');
+                        const lastIndex = classes.indexOf(entity.id + '_' + posEntity.id + '_last');
+                        const firstIndex = classes.indexOf(entity.id + '_' + posEntity.id + '_first');
                         // console.log('lastIndex', lastIndex)
                         // console.log('firstIndex', firstIndex)
                         if(lastIndex > -1) {
@@ -382,14 +444,19 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                             classes.splice(firstIndex, 1);
                             charsMap.classes = classes.join(' ');
                         }
-                        const labeledIndex = classes.indexOf('labeled');
+                        // const labeledIndex = classes.indexOf('labeled');
+                        const labeledIndex = classes.indexOf('labeled_' + posEntity.id);
                         if(labeledIndex > -1) {
                             classes.splice(labeledIndex, 1);
                             charsMap.classes = classes.join(' ');
                         }
                     // }
                     charsMap.entities = entities.join(',');
+                    charsMap.entityNames = entityNames.join(',');
+                    charsMap.entityIds = entityIds.join(',');
+                    charsMap.recordIds = recordIds.join('\n');
                     this.charsMap[i] = charsMap;
+                    this.charsMap[i].text_color = this.nameEntityRecognitionService.generateTextColor(this.charsMap[i].backgrounds);
                 }
             }
         }
@@ -407,7 +474,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             end_offset: this.endOffset,
             entity_id: entity.id,
             entity_type: entity,
-            recordIds: this.selectedEntities.join(','),
+            recordIds: this.selectedRecords.join(','),
             relationsIds: ''
         };
         this.entityPositions.push(position);
@@ -430,7 +497,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             const entitiesMap = this.entitiesTypes.map((o) => o.id.toString());
             const entityIndex = entitiesMap.indexOf(entityToRemove.entity_id.toString());
             if(entityIndex > -1) {
-                this.removeEntityFromCharsMap(this.entitiesTypes[entityIndex], entityToRemove.id, entityToRemove.start_offset, entityToRemove.end_offset);
+                this.removeEntityFromCharsMap(this.entitiesTypes[entityIndex], entityToRemove, entityToRemove.start_offset, entityToRemove.end_offset);
             }
         }
         // console.log('sort', sort)
@@ -442,11 +509,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     generateEntities(colors) {
         let count = 1;
         for (const i in this.entitiesTypes) {
-            const color = colors[count - 1];
+            let color = colors[count - 1];
             this.entitiesTypes[i].id = count.toString();
             // this.entitiesTypes[i].background_color = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
             if (!this.entitiesTypes[i].background_color) {
                 this.entitiesTypes[i].background_color = color;
+            } else {
+                color = this.entitiesTypes[i].background_color;
             }
             if (!this.entitiesTypes[i].text_color) {
                 this.entitiesTypes[i].text_color = this.nameEntityRecognitionService.getTextColor(color);
@@ -488,7 +557,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         // console.log(start, end);
         if(this.currentEntity && start < end) {
             const newPos = this.addEntityToPositions(this.currentEntity);
-            this.addEntityToCharsMap(this.currentEntity, newPos.id, start, end);
+            this.addEntityToCharsMap(this.currentEntity, newPos, start, end);
             this.clearSelection();
             // this.addEntity(this.currentEntity.id);
         }
@@ -527,6 +596,24 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 })
             }
         }
+    }
+    charHover(e, index) {
+        const target = e.target;
+        const currentChar = this.charsMap[index];
+        const map = this.entitiesMap.map((o) => o.id);
+        // const index = map.indexOf(entity.id);
+        // if(index > -1) {
+        //     this.entitiesMap[index].res.relationsIds = entity.relationsIds;
+        // }
+        if(currentChar.entityIds) {
+            const entities = currentChar.entityIds.split(',');
+            // for (const i in entities) {
+            //
+            // }
+            console.log(currentChar)
+            console.log(this.entitiesMap)
+        }
+        // console.log('target', target);
     }
     mouseUp(e) {
         const sel = window.getSelection().getRangeAt(0);
@@ -603,7 +690,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 start_offset: this.startOffset + indent,
                 end_offset: this.endOffset + indent,
                 entity_id: entityId,
-                recordIds: this.selectedEntities.join(','),
+                recordIds: this.selectedRecords.join(','),
                 relationsIds: ''
             };
             this.entityPositions.push(entity);
@@ -908,18 +995,18 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if (recordIndex > -1) {
             const recordId = this.records[recordIndex].id;
             this.records.splice(recordIndex, 1);
-            this.removeRecordFromSelectedEntities(recordId);
+            this.removeRecordFromSelectedRecords(recordId);
             this.removeRecordFromEntities(recordId);
         }
         // this.$emit('remove-entity', index);
     }
 
-    removeRecordFromSelectedEntities(entityId) {
-        const index = this.selectedEntities.indexOf(entityId);
+    removeRecordFromSelectedRecords(entityId) {
+        const index = this.selectedRecords.indexOf(entityId);
         if(index > -1) {
-            this.selectedEntities.splice(index, 1);
-            if(!this.selectedEntities.length) {
-                this.selectedEntities.push(this.records[0].id);
+            this.selectedRecords.splice(index, 1);
+            if(!this.selectedRecords.length) {
+                this.selectedRecords.push(this.records[0].id);
             }
         }
     }
@@ -937,14 +1024,14 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
     selectRecord(id) {
-        const index = this.selectedEntities.indexOf(id);
+        const index = this.selectedRecords.indexOf(id);
         if(index > -1) {
-            if(this.selectedEntities.length <= 1) {
+            if(this.selectedRecords.length <= 1) {
                 return;
             }
-            this.selectedEntities.splice(index, 1);
+            this.selectedRecords.splice(index, 1);
         } else {
-            this.selectedEntities.push(id);
+            this.selectedRecords.push(id);
         }
     }
 

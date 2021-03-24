@@ -704,6 +704,26 @@
             width: 50%;
         }
     }
+    &:hover {
+        &[recordIds] {
+            &:after {
+                content: attr(recordIds);
+                background: inherit;
+                color: inherit;
+                border-radius: 4px;
+                padding: 0.15em 0.2em;
+                line-height: 1;
+                font-size: 0.6em;
+                position: absolute;
+                top: 100%;
+                right: 100%;
+                text-align: center;
+                overflow: hidden;
+                white-space: pre;
+                z-index: 1;
+            }
+        }
+    }
 }
 
 .noselect {

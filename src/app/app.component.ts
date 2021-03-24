@@ -11,7 +11,7 @@ export class AppComponent implements OnInit {
     entitiesTypes = [
         {
             name: 'first',
-            // background_color: '#209cee',
+            background_color: '#209cee',
             // text_color: '#ffffff',
         },
         {
@@ -39,6 +39,17 @@ export class AppComponent implements OnInit {
             // background_color: '#9933ff',
             // text_color: '#ffffff',
         },
+    ]
+    positions = [
+        {
+            id: 'E1',
+            prob: 0,
+            start_offset: 7,
+            end_offset: 14,
+            entity_id: '1',
+            recordIds: 'R1',
+            relationsIds: ''
+        }
     ]
     text = `<section class="banner-padding-section">
 <div class="extra-large-wrapper center">
@@ -679,127 +690,48 @@ Ms. Evans received her MBA from Stanford University’s Graduate School of Busin
     }
 
     click() {
-        this.entitiesTypes = [
+        this.positions = [
             {
-                name: 'first',
-                // background_color: '#209cee',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'last',
-                // background_color: '#ffcc00',
-                // text_color: '#333333',
-            },
-            {
-                name: 'prefix',
-                // background_color: '#333333',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'address',
-                // background_color: '#33cc99',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'phones',
-                // background_color: '#ff3333',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'emails',
-                // background_color: '#9933ff',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'first',
-                // background_color: '#209cee',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'last',
-                // background_color: '#ffcc00',
-                // text_color: '#333333',
-            },
-            {
-                name: 'prefix',
-                // background_color: '#333333',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'address',
-                // background_color: '#33cc99',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'phones',
-                // background_color: '#ff3333',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'emails',
-                // background_color: '#9933ff',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'first',
-                // background_color: '#209cee',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'last',
-                // background_color: '#ffcc00',
-                // text_color: '#333333',
-            },
-            {
-                name: 'prefix',
-                // background_color: '#333333',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'address',
-                // background_color: '#33cc99',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'phones',
-                // background_color: '#ff3333',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'emails',
-                // background_color: '#9933ff',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'first',
-                // background_color: '#209cee',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'last',
-                // background_color: '#ffcc00',
-                // text_color: '#333333',
-            },
-            {
-                name: 'prefix',
-                // background_color: '#333333',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'address',
-                // background_color: '#33cc99',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'phones',
-                // background_color: '#ff3333',
-                // text_color: '#ffffff',
-            },
-            {
-                name: 'emails',
-                // background_color: '#9933ff',
-                // text_color: '#ffffff',
-            },
-        ]
+                id: 'E1',
+                prob: 0,
+                start_offset: 7,
+                end_offset: 14,
+                entity_id: '1',
+                recordIds: 'R1',
+                relationsIds: ''
+            }
+        ];
+        // this.entitiesTypes = [
+        //     {
+        //         name: 'first',
+        //         // background_color: '#209cee',
+        //         // text_color: '#ffffff',
+        //     },
+        //     {
+        //         name: 'last',
+        //         // background_color: '#ffcc00',
+        //         // text_color: '#333333',
+        //     },
+        //     {
+        //         name: 'prefix',
+        //         // background_color: '#333333',
+        //         // text_color: '#ffffff',
+        //     },
+        //     {
+        //         name: 'address',
+        //         // background_color: '#33cc99',
+        //         // text_color: '#ffffff',
+        //     },
+        //     {
+        //         name: 'phones',
+        //         // background_color: '#ff3333',
+        //         // text_color: '#ffffff',
+        //     },
+        //     {
+        //         name: 'emails',
+        //         // background_color: '#9933ff',
+        //         // text_color: '#ffffff',
+        //     },
+        // ]
     }
 }

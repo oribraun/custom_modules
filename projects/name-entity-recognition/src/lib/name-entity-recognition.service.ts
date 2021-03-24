@@ -110,10 +110,70 @@ export class NameEntityRecognitionService {
     }
 
     getTextColor(color) {
-        const rgb = color.replace('rgb(', '').replace(')', '').split(',');
-        const brightness = Math.round(((parseInt(rgb[0]) * 299) +
-            (parseInt(rgb[1]) * 587) +
-            (parseInt(rgb[2]) * 114)) / 1000);
+        const rgba = colorValues(color)
+        // const rgb = color.replace('rgb(', '').replace('rgba(', '').replace(')', '').split(',');
+        const brightness = Math.round(((parseInt(rgba[0]) * 299) +
+            (parseInt(rgba[1]) * 587) +
+            (parseInt(rgba[2]) * 114)) / 1000);
+        // console.log(rgba, (brightness > 125) ? '#000' : '#fff')
         return (brightness > 125) ? '#000' : '#fff';
+    }
+
+    generateTextColor(colors) {
+        let blackCount = 0;
+        let whiteCount = 0;
+        for(const i in colors) {
+            const color = colorValues(colors[i])
+            const textColor = this.getTextColor('rgba(' + color.join(',') + ')');
+            if(textColor === '#fff') {
+                whiteCount++
+            } else if (textColor === '#000') {
+                blackCount++;
+            }
+        }
+        return whiteCount > blackCount ? '#fff' : '#000';
+    }
+}
+
+function colorValues(color)
+{
+    if (!color)
+        return;
+    if (color.toLowerCase() === 'transparent')
+        return [0, 0, 0, 0];
+    if (color[0] === '#')
+    {
+        if (color.length < 7)
+        {
+            // convert #RGB and #RGBA to #RRGGBB and #RRGGBBAA
+            color = '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3] + (color.length > 4 ? color[4] + color[4] : '');
+        }
+        return [parseInt(color.substr(1, 2), 16),
+            parseInt(color.substr(3, 2), 16),
+            parseInt(color.substr(5, 2), 16),
+            color.length > 7 ? parseInt(color.substr(7, 2), 16)/255 : 1];
+    }
+    if (color.indexOf('rgb') === -1)
+    {
+        // convert named colors
+        var temp_elem = document.body.appendChild(document.createElement('fictum')); // intentionally use unknown tag to lower chances of css rule override with !important
+        var flag = 'rgb(1, 2, 3)'; // this flag tested on chrome 59, ff 53, ie9, ie10, ie11, edge 14
+        temp_elem.style.color = flag;
+        if (temp_elem.style.color !== flag)
+            return; // color set failed - some monstrous css rule is probably taking over the color of our object
+        temp_elem.style.color = color;
+        if (temp_elem.style.color === flag || temp_elem.style.color === '')
+            return; // color parse failed
+        color = getComputedStyle(temp_elem).color;
+        document.body.removeChild(temp_elem);
+    }
+    if (color.indexOf('rgb') === 0)
+    {
+        if (color.indexOf('rgba') === -1)
+            color += ',1'; // convert 'rgb(R,G,B)' to 'rgb(R,G,B)A' which looks awful but will pass the regxep below
+        return color.match(/[\.\d]+/g).map(function (a)
+        {
+            return +a
+        });
     }
 }

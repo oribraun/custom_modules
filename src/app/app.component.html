@@ -32,10 +32,13 @@
 </form>
 {{_text}}
 
+<div class="relative">
 <div class="wrapper">
     <lib-name-entity-recognition
         [text]="signature"
         [entitiesTypes]="entitiesTypes"
+        [entityPositions]="positions"
         (onSave)="onSave($event)"
     ></lib-name-entity-recognition>
+</div>
 </div>
