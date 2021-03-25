@@ -494,12 +494,14 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         for(let i = entity.start_offset; i < entity.end_offset; i++) {
             const recordIds = this.charsMap[i].recordIds.split('\n');
             const recordIndex = recordIds.indexOf(entity.id + ' (' + recordsToFind + ')');
+            // console.log('recordIds', recordIds)
+            // console.log('recordIndex', recordIndex)
             if(recordIndex > -1) {
-                console.log('before', recordIds[recordIndex]);
+                // console.log('before', recordIds[recordIndex]);
                 recordIds[recordIndex] = entity.id + ' (' + entity.recordIds + ')'
-                console.log('after', recordIds[recordIndex]);
+                // console.log('after', recordIds[recordIndex]);
             }
-            // this.charsMap[i].recordIds = entity.recordIds;
+            this.charsMap[i].recordIds = recordIds.join('\n');
         }
     }
     addEntityToPositions(entity) {
@@ -1061,8 +1063,10 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             const index = arr.indexOf(recordId.toString());
             if(index > -1) {
                 arr.splice(index, 1);
+                const recordsToFind = this.entityPositions[i].recordIds;
                 this.entityPositions[i].recordIds = arr.join(',');
                 this.updateEntityRecords(this.entityPositions[i])
+                this.updateCharsMapRecords(this.entityPositions[i], recordsToFind);
 
             }
         }
