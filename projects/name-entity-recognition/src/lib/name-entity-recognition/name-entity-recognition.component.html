@@ -1,6 +1,6 @@
 <div class="name-entity-recognition">
     <div class="panel" #panel>
-        <header class="panel-header" #header>
+        <header class="panel-header" #header [ngStyle]="{background: headerBackground}">
             <div class="field">
                 <div class="control" *ngFor="let record of records; let i = index">
                     <div class="tags has-addons" [ngClass]="{'selected': selectedRecords.indexOf(record.id) > -1}">
@@ -47,7 +47,8 @@
                     [attr.recordIds]="obj.recordIds"
                     [attr.index]="i"
                     [ngStyle]="{
-                    'background-color': obj.backgrounds,
+                    'background-color1': obj.backgrounds,
+                    'background-color': getLastBackground(obj.backgrounds),
                     'background': 'linear-gradient(' + obj.backgrounds + ')',
                     'color': obj.text_color
                     }"><!--
@@ -142,12 +143,20 @@
     <div class="relations-modal-dialog">
         <div class="relations-modal-content">
             <div class="relations-modal-header">
-                <h5 class="relations-modal-title" id="relationsModal">Relations - {{text.slice(currentRelationsEntity.start_offset, currentRelationsEntity.end_offset)}}</h5>
+                <h5 class="relations-modal-title" id="relationsModal">{{currentRelationsEntity.id}} - {{currentRelationsEntity.entity_type.name}}.<br>Relations for - {{text.slice(currentRelationsEntity.start_offset, currentRelationsEntity.end_offset)}}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="close()">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
             <div class="relations-modal-body">
+                <div class="main-box">
+                    <div>
+                        <b>Records</b>
+                        <span class="record" *ngFor="let r of currentRelationsEntity.records; let i = index"><!--
+                        --><span class="remove" (click)="removeRecordFromCurrentEntity(i);" *ngIf="currentRelationsEntity.records.length > 1"></span> {{r}}<!--
+                    --></span>
+                    </div>
+                </div>
                 <div class="options-box">
                     <div class="item" *ngFor="let l of entityPositions">
                         <div class="options"

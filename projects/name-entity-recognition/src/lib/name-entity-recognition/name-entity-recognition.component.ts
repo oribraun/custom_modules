@@ -37,6 +37,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @ViewChild('buttons') buttons;
     @Output() onSave: EventEmitter<any> = new EventEmitter<any>();
     // @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
+    @Input() headerBackground = '';
     @Input() text = '';
     @Input() entitiesTypes: any = [];
     @Input() entityPositions: any = [
@@ -70,6 +71,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     ];
     selectedRecords: any = [this.records[0].id];
     currentEntity: any = {};
+    currentRelationsEntityIndex: number;
     currentRelationsEntity: any = {};
     animatedModel = false;
     animatedEntitiesModel = false;
@@ -94,6 +96,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         setTimeout(() => {
             this.setCharsMap();
             this.initPositions();
+            this.initRecords();
         })
         // this.chunks = this.getChunks();
         // this.initAnnotations();
@@ -129,6 +132,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             setTimeout(() => {
                 this.setCharsMap();
                 this.initPositions();
+                this.initRecords();
                 setTimeout(() => {
                     this.initFixedHeader();
                 })
@@ -145,6 +149,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             setTimeout(() => {
                 this.setCharsMap();
                 this.initPositions();
+                this.initRecords();
             })
         }
         if(changes.entityPositions && !changes.entityPositions.firstChange) {
@@ -154,6 +159,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             setTimeout(() => {
                 this.setCharsMap();
                 this.initPositions();
+                this.initRecords();
             })
         }
     }
@@ -345,6 +351,26 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
 
+    initRecords() {
+        let records = [];
+        this.entityPositions.map((o) => {
+            console.log('o.recordIds', o)
+            const arr = o.recordIds.split(',');
+            records = records.concat(arr);
+        })
+        records = records.filter((o,i) => records.indexOf(o) === i);
+        const map = this.records.map((o) => o.id);
+        for(const i in records) {
+            if(map.indexOf(records[i]) === -1) {
+                this.records.push({
+                    id: records[i],
+                    background_color: '#209cee',
+                    text_color: '#ffffff',
+                })
+            }
+        }
+    }
+
     addEntityToCharsMap(entity, posEntity, start, end) {
         let cls = '';
         for(let i = start; i < end; i++) {
@@ -464,6 +490,18 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         // this.initPositions();
     }
 
+    updateCharsMapRecords(entity, recordsToFind) {
+        for(let i = entity.start_offset; i < entity.end_offset; i++) {
+            const recordIds = this.charsMap[i].recordIds.split('\n');
+            const recordIndex = recordIds.indexOf(entity.id + ' (' + recordsToFind + ')');
+            if(recordIndex > -1) {
+                console.log('before', recordIds[recordIndex]);
+                recordIds[recordIndex] = entity.id + ' (' + entity.recordIds + ')'
+                console.log('after', recordIds[recordIndex]);
+            }
+            // this.charsMap[i].recordIds = entity.recordIds;
+        }
+    }
     addEntityToPositions(entity) {
         const entitiesMap = this.entityPositions.map((o) => o.id.toString());
         const nextId = this.getNextId(entitiesMap);
@@ -587,9 +625,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             }
         }
         if(index > -1) {
+            this.currentRelationsEntityIndex = index;
             const currentEntity = this.entityPositions[index];
             if(this.startOffset === this.endOffset) {
                 this.currentRelationsEntity = currentEntity;
+                this.currentRelationsEntity.records = this.currentRelationsEntity.recordIds.split(',');
                 this.animatedModel = true;
                 setTimeout(() => {
                     this.modalOpen = true;
@@ -610,10 +650,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             // for (const i in entities) {
             //
             // }
-            console.log(currentChar)
-            console.log(this.entitiesMap)
+            // console.log(currentChar)
+            // console.log(this.entitiesMap)
         }
         // console.log('target', target);
+    }
+    getLastBackground(arr) {
+        return arr[arr.length - 1];
     }
     mouseUp(e) {
         const sel = window.getSelection().getRangeAt(0);
@@ -737,6 +780,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         setTimeout(() => {
             this.animatedModel = false;
             this.currentRelationsEntity = {};
+            this.currentRelationsEntityIndex = null;
         }, 300)
     }
 
@@ -1022,6 +1066,15 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
 
             }
         }
+    }
+
+    removeRecordFromCurrentEntity(i) {
+        this.currentRelationsEntity.records.splice(i, 1);
+        const recordsToFind = this.currentRelationsEntity.recordIds;
+        this.currentRelationsEntity.recordIds = this.currentRelationsEntity.records.join(',');
+        this.entityPositions[this.currentRelationsEntityIndex].recordIds = this.currentRelationsEntity.recordIds;
+        this.updateEntityRecords(this.currentRelationsEntity);
+        this.updateCharsMapRecords(this.currentRelationsEntity, recordsToFind);
     }
     selectRecord(id) {
         const index = this.selectedRecords.indexOf(id);
