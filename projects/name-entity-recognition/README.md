@@ -15,7 +15,7 @@ those are the params you should pass.<br>
 * onShowEntities - by default there is a simple popup to show current selected entities list, you can bypass it and design your entities view by passing this emitter
 * showResults - by default there is a simple popup to show current results object, you can bypass it and design your results view by passing this emitter 
 ## example
-```json
+```js
 
 class ExampleComponent {
     const entitiesTypes = [
@@ -69,7 +69,7 @@ class ExampleComponent {
 ```
 
 #how to use
-```
+```html
 <lib-name-entity-recognition
     [text]="text"
     [entitiesTypes]="entitiesTypes"
