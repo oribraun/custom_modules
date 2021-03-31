@@ -36,6 +36,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @ViewChild('content') content;
     @ViewChild('buttons') buttons;
     @Output() onSave: EventEmitter<any> = new EventEmitter<any>();
+    @Output() onChange: EventEmitter<any> = new EventEmitter<any>();
+    @Output() onShowEntities: EventEmitter<any> = new EventEmitter<any>();
+    @Output() onShowResults: EventEmitter<any> = new EventEmitter<any>();
     // @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
     @Input() headerBackground = '';
     @Input() text = '';
@@ -78,6 +81,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     modalOpen = false;
     entitiesMap:any = [];
     showEntitiesMap = false;
+    showResults = false;
+    currentResults: any;
     onContentScroll = false;
     onContentScrollTimeout;
     constructor(
@@ -97,6 +102,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.setCharsMap();
             this.initPositions();
             this.initRecords();
+            this.changeEvent();
         })
         // this.chunks = this.getChunks();
         // this.initAnnotations();
@@ -539,6 +545,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             if(entityIndex > -1) {
                 this.removeEntityFromCharsMap(this.entitiesTypes[entityIndex], entityToRemove, entityToRemove.start_offset, entityToRemove.end_offset);
             }
+            this.changeEvent();
         }
         // console.log('sort', sort)
         // console.log('map', map)
@@ -599,6 +606,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             const newPos = this.addEntityToPositions(this.currentEntity);
             this.addEntityToCharsMap(this.currentEntity, newPos, start, end);
             this.clearSelection();
+            this.changeEvent();
             // this.addEntity(this.currentEntity.id);
         }
     }
@@ -763,6 +771,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.entityPositions.splice(entityIndex, 1);
             this.removeFromEntityMap(entity);
             this.onAddedEntity();
+            this.changeEvent();
         }
         // this.$emit('remove-entity', index);
     }
@@ -799,6 +808,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
         this.currentRelationsEntity.relationsIds = relationsIds.join(',');
         this.updateEntityRelations(this.currentRelationsEntity);
+        this.changeEvent();
     }
 
     createEntity(startOffset, endOffset) {
@@ -1043,6 +1053,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.records.splice(recordIndex, 1);
             this.removeRecordFromSelectedRecords(recordId);
             this.removeRecordFromEntities(recordId);
+            this.changeEvent();
         }
         // this.$emit('remove-entity', index);
     }
@@ -1079,6 +1090,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         this.entityPositions[this.currentRelationsEntityIndex].recordIds = this.currentRelationsEntity.recordIds;
         this.updateEntityRecords(this.currentRelationsEntity);
         this.updateCharsMapRecords(this.currentRelationsEntity, recordsToFind);
+        this.changeEvent();
     }
     selectRecord(id) {
         const index = this.selectedRecords.indexOf(id);
@@ -1104,18 +1116,64 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         this.onSave.emit(data);
     }
 
-    showResults() {
+    changeEvent() {
+        if(this.onChange.observers.length) {
+            const data = {
+                // text: this.text,
+                // entitiesTypes: this.entitiesTypes,
+                positions: this.entityPositions,
+                records: this.records,
+                results: this.buildResults()
+            }
+            this.onChange.emit(data);
+        }
+    }
+
+    showEntitiesEvent() {
+        if (this.onShowEntities.observers.length) {
+            this.onShowEntities.emit(this.entitiesMap);
+        }
+    }
+    showResultsEvent() {
+        if (this.onShowResults.observers.length) {
+            this.onShowResults.emit(this.buildResults());
+        }
+    }
+
+    openEntities() {
+        if (this.onShowEntities.observers.length) {
+            this.showEntitiesEvent();
+            return;
+        }
         this.animatedEntitiesModel = true;
         setTimeout(() => {
             this.showEntitiesMap = true;
         })
     }
+    openResults() {
+        if (this.onShowResults.observers.length) {
+            this.showResultsEvent();
+            return;
+        }
+        this.currentResults = this.buildResults();
+        setTimeout(() => {
+            this.showResults = true;
+        })
+    }
 
-    hideResults() {
+    hideEntities() {
         this.showEntitiesMap = false;
         setTimeout(() => {
             this.animatedEntitiesModel = false;
             this.currentRelationsEntity = {};
+        }, 300)
+    }
+
+    hideResults() {
+        this.showResults = false;
+        setTimeout(() => {
+            this.animatedEntitiesModel = false;
+            this.currentResults = null;
         }, 300)
     }
 
@@ -1134,7 +1192,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 if (text_annotation.key) {
                     results[records[j]][text_annotation.res.entity_type].push({
                         text: text_annotation.key,
-                        // id: text_annotation.id,
+                        id: text_annotation.id,
                         relationsIds: text_annotation.res.relationsIds,
                         start_index: text_annotation.res.start_index,
                         end_index: text_annotation.res.end_index

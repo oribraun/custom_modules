@@ -383,7 +383,7 @@
     }
 }
 
-.relations-modal, .entities-modal {
+.relations-modal, .entities-modal, .results-modal {
     position: fixed;
     top:0;
     left:0;
@@ -524,6 +524,17 @@
             .entities-modal-body {
                 max-height: 500px;
                 overflow: auto;
+            }
+            .results-modal-body {
+                max-height: 500px;
+                overflow: auto;
+                .record {
+                    .entity {
+                        .results {
+
+                        }
+                    }
+                }
             }
             .relations-modal-footer, .entities-modal-footer {
                 display: -webkit-box;
