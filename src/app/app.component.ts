@@ -694,6 +694,9 @@ Ms. Evans received her MBA from Stanford University’s Graduate School of Busin
     onShowEntities(results) {
         console.log('onShowEntities', results);
     }
+    onShowResults(results) {
+        console.log('onShowResults', results);
+    }
 
     click() {
         this.positions = [

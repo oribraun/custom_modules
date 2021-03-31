@@ -2,72 +2,81 @@
 
 This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.2.1.
 
-## Code scaffolding
+## description
 
-Run `ng generate component component-name --project name-entity-recognition` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module --project name-entity-recognition`.
-> Note: Don't forget to add `--project name-entity-recognition` or else it will be added to the default project in your `angular.json` file. 
+This library is for Name entity recognition labeling,
 
-## Build
-
-Run `ng build name-entity-recognition` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Publishing
-
-After building your library with `ng build name-entity-recognition`, go to the dist folder `cd dist/name-entity-recognition` and run `npm publish`.
-
-## Running unit tests
-
-Run `ng test name-entity-recognition` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
-
-#example
+those are the params you should pass.<br>
+* entitiesType - a list of entity names and colors you want to label from text
+* positions - a list of current position already labeled from text
+* text - the text you want to labeled entities from
+* onSave - emitter that will get the final result object
+* onChange - emitter that will be triggered for every entity change and will get current results, positions and records
+* onShowEntities - by default there is a simple popup to show current selected entities list, you can bypass it and design your entities view by passing this emitter
+* showResults - by default there is a simple popup to show current results object, you can bypass it and design your results view by passing this emitter 
+## example
 ```json
-entitiesTypes = [
-     {
-         text: 'first',
-         background_color: '#209cee',
-         text_color: '#ffffff',
-     },
-     {
-         text: 'last',
-         background_color: '#ffcc00',
-         text_color: '#333333',
-     },
-     {
-         text: 'prefix',
-         background_color: '#333333',
-         text_color: '#ffffff',
-     },
-     {
-         text: 'address',
-         background_color: '#33cc99',
-         text_color: '#ffffff',
-     },
-     {
-         text: 'phones',
-         background_color: '#ff3333',
-         text_color: '#ffffff',
-     },
-     {
-         text: 'emails',
-         background_color: '#9933ff',
-         text_color: '#ffffff',
-     },
- ]
- 
- text = 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups'
- 
- onSave(results) {
-     console.log('results', results);
+
+class ExampleComponent {
+    const entitiesTypes = [
+         {
+             text: 'first',
+             background_color: '#209cee', // optional
+             text_color: '#ffffff', // optional
+         },
+         {
+             text: 'last',
+             background_color: '#ffcc00', // optional
+             text_color: '#333333', // optional
+         },
+         {
+             text: 'prefix',
+             background_color: '#333333', // optional
+             text_color: '#ffffff', // optional
+         },
+         {
+             text: 'address',
+             background_color: '#33cc99', // optional
+             text_color: '#ffffff', // optional
+         },
+         {
+             text: 'phones',
+             background_color: '#ff3333', // optional
+             text_color: '#ffffff', // optional
+         },
+         {
+             text: 'emails',
+             background_color: '#9933ff', // optional
+             text_color: '#ffffff', // optional
+         },
+     ];
+     const positions = [];
+     const text = 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups';
+     
+     onSave(results) {
+         console.log('results', results);
+     }
+     onChange(results) {
+         console.log('onChange', results);
+     }
+     onShowEntities(results) {
+         console.log('onShowEntities', results);
+     }
+     onShowResults(results) {
+         console.log('onShowResults', results);
+     }
  }
 ```
 
 #how to use
+```
 <lib-name-entity-recognition
     [text]="text"
     [entitiesTypes]="entitiesTypes"
+    [entityPositions]="positions"
     (onSave)="onSave($event)"
+    (onChange)="onChange($event)"
+    (onShowEntities)="onShowEntities($event)"
+    (onShowResults)="onShowResults($event)"
 ></lib-name-entity-recognition>
+```
