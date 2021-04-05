@@ -8,6 +8,46 @@ import {Component, EventEmitter, OnInit} from '@angular/core';
 export class AppComponent implements OnInit {
     _text = 'test'
     title = 'ng-trix';
+    public design = {
+        header: {
+            'background': '#78f3ff',
+            'box-shadow': 'none',
+            'color': '#000'
+        },
+        tag: {
+            'box-shadow': '0 0 5px #fff',
+            'border-radius': '50px',
+            // any css property except background-color and color that being set by entity setting
+        },
+        tag_active: {
+            'box-shadow': '0 0 5px #000',
+            'border-radius': '50px',
+            // any css property except background-color and color that being set by entity setting
+        },
+        record: {
+            shadow: {
+                'box-shadow': '0 0 5px #fff',
+            },
+            tile: {
+                'background': 'green',
+            },
+            add_on: {
+                'background': '#ccc',
+            }
+
+        },
+        record_active: {
+            shadow: {
+                'box-shadow': '0 0 5px #000',
+            },
+            tile: {
+                'background': 'red',
+            },
+            add_on: {
+                'background': '#ccc',
+            }
+        }
+    };
     entitiesTypes = [
         {
             name: 'first',

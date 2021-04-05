@@ -1,11 +1,12 @@
 <div class="name-entity-recognition">
     <div class="panel" #panel>
-        <header class="panel-header" #header [ngStyle]="{background: headerBackground}">
+        <header class="panel-header" #header [ngStyle]="defaultDesign.header">
             <div class="field">
                 <div class="control" *ngFor="let record of records; let i = index">
                     <div class="tags has-addons" [ngClass]="{'selected': selectedRecords.indexOf(record.id) > -1}">
-                        <div class="record-shadow" (click)="selectRecord(record.id)"></div>
-                        <a class="tag" (click)="selectRecord(record.id)" [ngStyle]="{'color': record.text_color, 'background-color': record.background_color}">
+                        <div class="record-shadow" [ngStyle]="setStyle(defaultDesign.record.shadow,(selectedRecords.indexOf(record.id) > -1 ? defaultDesign.record_active.shadow : {}))" (click)="selectRecord(record.id)"></div>
+                        <a class="tag" (click)="selectRecord(record.id)"
+                           [ngStyle]="setStyle({'color': record.text_color, 'background-color': record.background_color},defaultDesign.record.tile, (selectedRecords.indexOf(record.id) > -1 ? defaultDesign.record_active.tile : {}))">
                             Record
                         </a>
                         <span class="tag addon">{{record.id}}</span>
@@ -23,7 +24,8 @@
                     <!--                    <span class="tag">{{label.shortcut}}</span>-->
                     <!--                </div>-->
                     <div class="tags">
-                        <a class="tag" [ngClass]="{active: currentEntity.id == entity.id}" (click)="selectEntity(entity)" [ngStyle]="{'color': entity.text_color, 'background-color': entity.background_color}">
+                        <a class="tag" [ngClass]="{active: currentEntity.id == entity.id}" (click)="selectEntity(entity)"
+                           [ngStyle]="setStyle(defaultDesign.tag,currentEntity.id == entity.id ? defaultDesign.tag_active : {},{'color': entity.text_color, 'background-color': entity.background_color})">
                             {{entity.name}}
                         </a>
                     </div>

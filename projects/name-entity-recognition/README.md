@@ -18,7 +18,7 @@ those are the params you should pass.<br>
 ```js
 
 class ExampleComponent {
-    const entitiesTypes = [
+    public entitiesTypes = [
          {
              text: 'first',
              background_color: '#209cee', // optional
@@ -50,9 +50,54 @@ class ExampleComponent {
              text_color: '#ffffff', // optional
          },
      ];
-     const positions = [];
-     const text = 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups';
-     
+     public positions = [];
+     public text = 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups';
+     public design = {
+         header: {
+             'background': '#78f3ff',
+             'box-shadow': 'none',
+             'color': '#000'
+         },
+         tag: {
+             'box-shadow': '0 0 5px #fff',
+             'border-radius': '50px',
+             // any css property except background-color and color that being set by entity setting
+         },
+         tag_active: {
+             'box-shadow': '0 0 5px #000',
+             'border-radius': '50px',
+             // any css property except background-color and color that being set by entity setting
+         },
+         record: {
+             shadow: {
+                 'box-shadow': '0 0 5px #fff',
+                 // any css property
+             },
+             tile: {
+                 'background': 'green',
+                 // any css property
+             },
+             add_on: {
+                 'background': '#ccc',
+                 // any css property
+             }
+ 
+         },
+         record_active: {
+             shadow: {
+                 'box-shadow': '0 0 5px #000',
+                 // any css property
+             },
+             tile: {
+                 'background': 'red',
+                 // any css property
+             },
+             add_on: {
+                 'background': '#ccc',
+                 // any css property
+             }
+         }
+     };
      onSave(results) {
          console.log('results', results);
      }
@@ -72,6 +117,7 @@ class ExampleComponent {
 ```html
 <lib-name-entity-recognition
     [text]="text"
+    [design]="design"
     [entitiesTypes]="entitiesTypes"
     [entityPositions]="positions"
     (onSave)="onSave($event)"

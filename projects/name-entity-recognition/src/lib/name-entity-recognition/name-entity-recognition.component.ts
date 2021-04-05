@@ -40,7 +40,23 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @Output() onShowEntities: EventEmitter<any> = new EventEmitter<any>();
     @Output() onShowResults: EventEmitter<any> = new EventEmitter<any>();
     // @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
-    @Input() headerBackground = '';
+    @Input() headerDesign = {};
+    @Input() design: any = {};
+    public defaultDesign = {
+        header: {},
+        tag: {},
+        tag_active: {},
+        record: {
+            shadow: {},
+            tile: {},
+            add_on: {}
+        },
+        record_active: {
+            shadow: {},
+            tile: {},
+            add_on: {}
+        }
+    }
     @Input() text = '';
     @Input() entitiesTypes: any = [];
     @Input() entityPositions: any = [
@@ -96,6 +112,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         // colors = colors.sort( () => .5 - Math.random();
         // this.setCharsMap();
         // this.initPositions();
+        this.setDesign();
         this.generateEntities(this.colors);
         this.charsMapInProgress = true;
         setTimeout(() => {
@@ -124,6 +141,42 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
 
     ngAfterViewInit(): void {
         this.initFixedHeader();
+    }
+
+    setDesign() {
+        if(this.design) {
+            if(this.design.header) {
+                this.defaultDesign.header = this.design.header;
+            }
+            if(this.design.tag) {
+                this.defaultDesign.tag = this.design.tag;
+            }
+            if(this.design.tag_active) {
+                this.defaultDesign.tag_active = this.design.tag_active;
+            }
+            if(this.design.record) {
+                if(this.design.record.shadow) {
+                    this.defaultDesign.record.shadow = this.design.record.shadow;
+                }
+                if(this.design.record.tile) {
+                    this.defaultDesign.record.tile = this.design.record.tile;
+                }
+                if(this.design.record.shadow) {
+                    this.defaultDesign.record.add_on = this.design.record.add_on;
+                }
+            }
+            if(this.design.record_active) {
+                if(this.design.record_active.shadow) {
+                    this.defaultDesign.record_active.shadow = this.design.record_active.shadow;
+                }
+                if(this.design.record_active.tile) {
+                    this.defaultDesign.record_active.tile = this.design.record_active.tile;
+                }
+                if(this.design.record_active.shadow) {
+                    this.defaultDesign.record_active.add_on = this.design.record_active.add_on;
+                }
+            }
+        }
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -167,6 +220,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 this.initPositions();
                 this.initRecords();
             })
+        }
+        if(changes.design && !changes.design.firstChange) {
+            this.setDesign();
         }
     }
 
@@ -1319,6 +1375,14 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
 
         return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    setStyle(...objs) {
+        let obj = {};
+        for(const i in objs) {
+            obj = {...obj, ...objs[i]};
+        }
+        return obj
     }
 
 }
