@@ -1130,6 +1130,10 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             const index = arr.indexOf(recordId.toString());
             if(index > -1) {
                 arr.splice(index, 1);
+                if(!arr.length) {
+                    this.removeEntitiesFromPositions(this.entityPositions[i].end_offset);
+                    return;
+                }
                 const recordsToFind = this.entityPositions[i].recordIds;
                 this.entityPositions[i].recordIds = arr.join(',');
                 this.updateEntityRecords(this.entityPositions[i])
