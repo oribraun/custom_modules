@@ -10,74 +10,62 @@ export class AppComponent implements OnInit {
     title = 'ng-trix';
     public design = {
         header: {
-            'background': '#78f3ff',
-            'box-shadow': 'none',
-            'color': '#000'
+            'background-color': '#fff',
+            'color': '#000',
         },
         tag: {
-            'box-shadow': '0 0 5px #fff',
-            'border-radius': '50px',
-            // any css property except background-color and color that being set by entity setting
+            'border': 'solid 1px #f5f5f5',
         },
         tag_active: {
-            'box-shadow': '0 0 5px #000',
-            'border-radius': '50px',
-            // any css property except background-color and color that being set by entity setting
+            'background-color': '#fff',
+            'border': 'solid 1px green',
+            'color':'green',
+            'box-shadow': '2px 2px 5px #8a8a8a',
         },
         record: {
-            shadow: {
-                'box-shadow': '0 0 5px #fff',
-            },
             tile: {
-                'background': 'green',
-            },
-            add_on: {
-                'background': '#ccc',
+                'border': 'solid 1px #f5f5f5',
             }
-
         },
         record_active: {
-            shadow: {
-                'box-shadow': '0 0 5px #000',
-            },
             tile: {
-                'background': 'red',
-            },
-            add_on: {
-                'background': '#ccc',
+                'background-color': '#209cee',
+                'color':'#fff',
+                'border': 'solid 1px #14496d',
+                'box-shadow': '2px 2px 5px #8a8a8a',
             }
         }
     };
     entitiesTypes = [
         {
             name: 'first',
-            background_color: '#209cee',
-            // text_color: '#ffffff',
+            background_color: '#f5f5f5',
+            text_color: '#888888',
         },
         {
             name: 'last',
-            // background_color: '#ffcc00',
-            // text_color: '#333333',
+            background_color: '#f5f5f5',
+            text_color: '#888888',
         },
         {
             name: 'prefix',
-            // background_color: '#333333',
-            // text_color: '#ffffff',
+            background_color: '#f5f5f5',
+            text_color: '#888888',
         },
         {
             name: 'address',
-            // background_color: '#33cc99',
-            // text_color: '#ffffff',
+            background_color: '#f5f5f5',
+            text_color: '#888888',
         },
         {
             name: 'phones',
-            // background_color: '#ff3333',
-            // text_color: '#ffffff',
+            background_color: '#f5f5f5',
+            text_color: '#888888',
         },
         {
             name: 'emails',
-            // background_color: '#9933ff',
-            // text_color: '#ffffff',
+            background_color: '#f5f5f5',
+            text_color: '#888888',
         },
     ]
     positions = [

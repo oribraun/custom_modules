@@ -44,17 +44,31 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @Input() design: any = {};
     public defaultDesign = {
         header: {},
-        tag: {},
-        tag_active: {},
+        tag: {
+            'border': 'solid 1px #f5f5f5',
+        },
+        tag_active: {
+            'background-color': '#fff',
+            'border': 'solid 1px green',
+            'color':'green',
+            'box-shadow': '2px 2px 5px #8a8a8a',
+        },
         record: {
-            shadow: {},
-            tile: {},
-            add_on: {}
+            // shadow: {},
+            tile: {
+                'border': 'solid 1px #f5f5f5',
+            },
+            // add_on: {}
         },
         record_active: {
-            shadow: {},
-            tile: {},
-            add_on: {}
+            // shadow: {},
+            tile: {
+                'background-color': '#209cee',
+                'color':'#fff',
+                'border': 'solid 1px #14496d',
+                'box-shadow': '2px 2px 5px #8a8a8a',
+            },
+            // add_on: {}
         }
     }
     @Input() text = '';
@@ -84,8 +98,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     records = [
         {
             id: this.recordIdPrefix + (1).toString(),
-            background_color: '#209cee',
-            text_color: '#ffffff',
+            number: (1).toString(),
+            background_color: '#f5f5f5',
+            text_color: '#888888',
         },
     ];
     selectedRecords: any = [this.records[0].id];
@@ -120,6 +135,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.initPositions();
             this.initRecords();
             this.changeEvent();
+            setTimeout(() => {
+                this.initFixedHeader();
+            })
         })
         // this.chunks = this.getChunks();
         // this.initAnnotations();
@@ -155,26 +173,26 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 this.defaultDesign.tag_active = this.design.tag_active;
             }
             if(this.design.record) {
-                if(this.design.record.shadow) {
-                    this.defaultDesign.record.shadow = this.design.record.shadow;
-                }
+                // if(this.design.record.shadow) {
+                //     this.defaultDesign.record.shadow = this.design.record.shadow;
+                // }
                 if(this.design.record.tile) {
                     this.defaultDesign.record.tile = this.design.record.tile;
                 }
-                if(this.design.record.shadow) {
-                    this.defaultDesign.record.add_on = this.design.record.add_on;
-                }
+                // if(this.design.record.shadow) {
+                //     this.defaultDesign.record.add_on = this.design.record.add_on;
+                // }
             }
             if(this.design.record_active) {
-                if(this.design.record_active.shadow) {
-                    this.defaultDesign.record_active.shadow = this.design.record_active.shadow;
-                }
+                // if(this.design.record_active.shadow) {
+                //     this.defaultDesign.record_active.shadow = this.design.record_active.shadow;
+                // }
                 if(this.design.record_active.tile) {
                     this.defaultDesign.record_active.tile = this.design.record_active.tile;
                 }
-                if(this.design.record_active.shadow) {
-                    this.defaultDesign.record_active.add_on = this.design.record_active.add_on;
-                }
+                // if(this.design.record_active.shadow) {
+                //     this.defaultDesign.record_active.add_on = this.design.record_active.add_on;
+                // }
             }
         }
     }
@@ -239,7 +257,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
 
     initFixedHeader() {
         const parentHeight = this.panel.nativeElement.parentNode.clientHeight;
-        console.log('parentHeight', parentHeight)
+        // console.log('parentHeight', parentHeight)
         const panelHeight = this.panel.nativeElement.clientHeight;
         const headerHeight = this.header.nativeElement.clientHeight;
         const buttonsHeight = this.buttons.nativeElement.clientHeight;
@@ -416,7 +434,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     initRecords() {
         let records = [];
         this.entityPositions.map((o) => {
-            console.log('o.recordIds', o)
+            // console.log('o.recordIds', o)
             const arr = o.recordIds.split(',');
             records = records.concat(arr);
         })
@@ -426,6 +444,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             if(map.indexOf(records[i]) === -1) {
                 this.records.push({
                     id: records[i],
+                    number: parseInt(records[i], 0).toString(),
                     background_color: '#209cee',
                     text_color: '#ffffff',
                 })
@@ -453,7 +472,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 entities.push(entity.id);
                 entityNames.push(entity.name);
                 entityIds.push(posEntity.id);
-                recordIds.push(posEntity.id + ' (' + posEntity.recordIds + ')');
+                recordIds.push(entityNames + ' (' + posEntity.recordIds + ')');
                 // charsMap.recordIds[posEntity.id] = posEntity.recordIds;
                 // charsMap.relationsIds[posEntity.id] = posEntity.relationsIds;
                 charsMap.entities = entities.join(',')
@@ -498,7 +517,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 const index = entities.indexOf(entity.id);
                 const nameIndex = entityNames.indexOf(entity.name);
                 const entityIndex = entityIds.indexOf(posEntity.id);
-                const recordIndex = recordIds.indexOf(posEntity.id + ' (' + posEntity.recordIds + ')');
+                const recordIndex = recordIds.indexOf(entityNames + ' (' + posEntity.recordIds + ')');
                 if(index > -1) {
                     // delete this.charsMap[i].recordIds[posEntity.id];
                     // delete this.charsMap[i].relationsIds[posEntity.id];
@@ -1092,10 +1111,12 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         const nextId = this.getNextId(recordsMap);
         const data = {
             id: this.recordIdPrefix + nextId.toString(),
-            background_color: '#209cee',
-            text_color: '#ffffff',
+            number: nextId.toString(),
+            background_color: '#f5f5f5',
+            text_color: '#888888',
         };
-        this.records.push(data)
+        this.records.push(data);
+        this.initFixedHeader();
     }
 
     removeRecord(id) {
@@ -1269,6 +1290,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         let id = 0;
         if(arr.length) {
             id = arr.reduce((r, o) => {
+                o = parseInt(o.toString().replace(/^[^0-9]+/, ''), 0)
+                r = parseInt(r.toString().replace(/^[^0-9]+/, ''), 0)
                 return r < o ? o : r;
             });
         }

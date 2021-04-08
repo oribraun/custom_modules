@@ -1,20 +1,19 @@
 <div class="name-entity-recognition">
     <div class="panel" #panel>
         <header class="panel-header" #header [ngStyle]="defaultDesign.header">
+            <div class="header-text">RECORDS <div class="add" (click)="addRecord()"></div></div>
             <div class="field">
                 <div class="control" *ngFor="let record of records; let i = index">
-                    <div class="tags has-addons" [ngClass]="{'selected': selectedRecords.indexOf(record.id) > -1}">
-                        <div class="record-shadow" [ngStyle]="setStyle(defaultDesign.record.shadow,(selectedRecords.indexOf(record.id) > -1 ? defaultDesign.record_active.shadow : {}))" (click)="selectRecord(record.id)"></div>
+                    <div class="tags" [ngClass]="{'selected': selectedRecords.indexOf(record.id) > -1}">
                         <a class="tag" (click)="selectRecord(record.id)"
                            [ngStyle]="setStyle({'color': record.text_color, 'background-color': record.background_color},defaultDesign.record.tile, (selectedRecords.indexOf(record.id) > -1 ? defaultDesign.record_active.tile : {}))">
-                            Record
+                            RECORD {{record.number}}
                         </a>
-                        <span class="tag addon">{{record.id}}</span>
                         <div class="remove" *ngIf="i !== 0" (click)="removeRecord(record.id)"></div>
                     </div>
                 </div>
-                <div class="add" (click)="addRecord()"></div>
             </div>
+            <div class="header-text">ENTITY TYPES</div>
             <div class="field">
                 <div class="control" *ngFor="let entity of entitiesTypes">
                     <!--                <div class="tags has-addons">-->
@@ -25,7 +24,7 @@
                     <!--                </div>-->
                     <div class="tags">
                         <a class="tag" [ngClass]="{active: currentEntity.id == entity.id}" (click)="selectEntity(entity)"
-                           [ngStyle]="setStyle(defaultDesign.tag,currentEntity.id == entity.id ? defaultDesign.tag_active : {},{'color': entity.text_color, 'background-color': entity.background_color})">
+                       [ngStyle]="setStyle({'color': entity.text_color, 'background-color': entity.background_color},defaultDesign.tag, (currentEntity.id == entity.id ? defaultDesign.tag_active : {}))">
                             {{entity.name}}
                         </a>
                     </div>
@@ -46,7 +45,7 @@
                     [attr.show]="obj.show"
                     [attr.entityNames]="obj.entityNames"
                     [attr.entityIds]="obj.entityIds"
-                    [attr.recordIds]="obj.recordIds"
+                    [attr.recordIds]="obj.recordIds ? obj.recordIds : null"
                     [attr.index]="i"
                     [ngStyle]="{
                     'background-color1': obj.backgrounds,
@@ -97,7 +96,7 @@
                 <div *ngIf="charsMapInProgress">Loading</div>
             </div>
         </div>
-        <div class="buttons" #buttons>
+        <div class="buttons" #buttons *ngIf="!charsMapInProgress">
             <button (click)="save()">Save</button>
             <button (click)="openEntities()">Show Entities</button>
             <button (click)="openResults()">Show Results</button>
