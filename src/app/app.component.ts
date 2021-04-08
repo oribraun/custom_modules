@@ -14,7 +14,7 @@ export class AppComponent implements OnInit {
             'color': '#000',
         },
         tag: {
-            'border': 'solid 1px #f5f5f5',
+            'border': 'solid 1px #999999',
         },
         tag_active: {
             'background-color': '#fff',
@@ -54,18 +54,18 @@ export class AppComponent implements OnInit {
         },
         {
             name: 'address',
-            background_color: '#f5f5f5',
-            text_color: '#888888',
+            // background_color: '#f5f5f5',
+            // text_color: '#888888',
         },
         {
             name: 'phones',
-            background_color: '#f5f5f5',
-            text_color: '#888888',
+            // background_color: '#f5f5f5',
+            // text_color: '#888888',
         },
         {
             name: 'emails',
-            background_color: '#f5f5f5',
-            text_color: '#888888',
+            // background_color: '#f5f5f5',
+            // text_color: '#888888',
         },
     ]
     positions = [

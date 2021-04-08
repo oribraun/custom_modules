@@ -48,10 +48,10 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             'border': 'solid 1px #f5f5f5',
         },
         tag_active: {
-            'background-color': '#fff',
-            'border': 'solid 1px green',
-            'color':'green',
-            'box-shadow': '2px 2px 5px #8a8a8a',
+            // 'background-color': 'inherit',
+            // 'border': 'solid 1px green',
+            // 'color':'green',
+            // 'box-shadow': '2px 2px 5px #8a8a8a',
         },
         record: {
             // shadow: {},
