@@ -95,15 +95,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     // entityPositions = [{startOffset: 10, endOffset: 15, entity_id: 1}];
     recordIdPrefix = 'R';
     entityIdPrefix = 'E';
-    records = [
-        {
-            id: this.recordIdPrefix + (1).toString(),
-            number: (1).toString(),
-            background_color: '#f5f5f5',
-            text_color: '#888888',
-        },
-    ];
-    selectedRecords: any = [this.records[0].id];
+    records = [];
+    selectedRecords: any = [];
     currentEntity: any = {};
     currentRelationsEntityIndex: number;
     currentRelationsEntity: any = {};
@@ -128,12 +121,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         // this.setCharsMap();
         // this.initPositions();
         this.setDesign();
+        this.resetRecords();
+        this.initRecords();
         this.generateEntities(this.colors);
         this.charsMapInProgress = true;
         setTimeout(() => {
             this.setCharsMap();
             this.initPositions();
-            this.initRecords();
             this.changeEvent();
             setTimeout(() => {
                 this.initFixedHeader();
@@ -209,6 +203,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             setTimeout(() => {
                 this.setCharsMap();
                 this.initPositions();
+                this.resetRecords();
                 this.initRecords();
                 setTimeout(() => {
                     this.initFixedHeader();
@@ -226,6 +221,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             setTimeout(() => {
                 this.setCharsMap();
                 this.initPositions();
+                this.resetRecords();
                 this.initRecords();
             })
         }
@@ -236,6 +232,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             setTimeout(() => {
                 this.setCharsMap();
                 this.initPositions();
+                this.resetRecords();
                 this.initRecords();
             })
         }
@@ -431,6 +428,18 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
 
+    resetRecords() {
+        this.records = [
+            {
+                id: this.recordIdPrefix + (1).toString(),
+                number: (1).toString(),
+                background_color: '#f5f5f5',
+                text_color: '#888888',
+            },
+        ]
+        this.selectedRecords = [this.records[0].id];
+    }
+
     initRecords() {
         let records = [];
         this.entityPositions.map((o) => {
@@ -439,12 +448,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             records = records.concat(arr);
         })
         records = records.filter((o,i) => records.indexOf(o) === i);
+        console.log('records', records)
         const map = this.records.map((o) => o.id);
         for(const i in records) {
             if(map.indexOf(records[i]) === -1) {
                 this.records.push({
                     id: records[i],
-                    number: parseInt(records[i], 0).toString(),
+                    number: parseInt(records[i].toString().replace(/^[^0-9]+/, ''), 0).toString(),
                     background_color: '#209cee',
                     text_color: '#ffffff',
                 })

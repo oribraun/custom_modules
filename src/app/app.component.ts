@@ -75,7 +75,7 @@ export class AppComponent implements OnInit {
             start_offset: 7,
             end_offset: 14,
             entity_id: '1',
-            recordIds: 'R1',
+            recordIds: 'R1,R2',
             relationsIds: ''
         }
     ]
@@ -734,7 +734,7 @@ Ms. Evans received her MBA from Stanford University’s Graduate School of Busin
                 start_offset: 7,
                 end_offset: 14,
                 entity_id: '1',
-                recordIds: 'R1',
+                recordIds: 'R1,R3',
                 relationsIds: ''
             }
         ];
