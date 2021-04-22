@@ -98,9 +98,9 @@
         </div>
         <div class="buttons" #buttons>
             <div *ngIf="!charsMapInProgress">
-                <button (click)="save()">Save</button>
-                <button (click)="openEntities()">Show Entities</button>
-                <button (click)="openResults()">Show Results</button>
+                <button (click)="save()" *ngIf="!hideSaveButton">Save</button>
+                <button (click)="openEntities()" *ngIf="!hideEntitiesButton">Show Entities</button>
+                <button (click)="openResults()" *ngIf="!hideResultsButton">Show Results</button>
             </div>
         </div>
     </div>

@@ -84,6 +84,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         //     relationsIds: ''
         // }
     ];
+    @Input() hideSaveButton = false;
+    @Input() hideEntitiesButton = false;
+    @Input() hideResultsButton = false;
     charsMap = [];
     charsMapInProgress = false;
     charsMapTimeout: any;
