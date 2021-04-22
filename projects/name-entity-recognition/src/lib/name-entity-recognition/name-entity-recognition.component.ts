@@ -112,6 +112,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     currentResults: any;
     onContentScroll = false;
     onContentScrollTimeout;
+
+    initFinish = false;
     constructor(
         private nameEntityRecognitionService: NameEntityRecognitionService
     ) {
@@ -134,6 +136,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.changeEvent();
             setTimeout(() => {
                 this.initFixedHeader();
+                this.initFinish = true;
             })
         })
         // this.chunks = this.getChunks();
@@ -260,7 +263,10 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         // console.log('parentHeight', parentHeight)
         const panelHeight = this.panel.nativeElement.clientHeight;
         const headerHeight = this.header.nativeElement.clientHeight;
-        const buttonsHeight = this.buttons.nativeElement.clientHeight;
+        let buttonsHeight = 0;
+        if(this.buttons) {
+            buttonsHeight = this.buttons.nativeElement.clientHeight;
+        }
         this.panel.nativeElement.style.paddingTop = headerHeight + 'px';
         this.panel.nativeElement.style.paddingBottom = buttonsHeight + 'px';
         this.content.nativeElement.style.height = (parentHeight - headerHeight - buttonsHeight) + 'px';

@@ -1,4 +1,4 @@
-<div class="name-entity-recognition">
+<div class="name-entity-recognition" [ngStyle]="!initFinish && {visibility: 'hidden'}">
     <div class="panel" #panel>
         <header class="panel-header" #header [ngStyle]="defaultDesign.header">
             <div class="header-text">RECORDS <div class="add" (click)="addRecord()"></div></div>
@@ -96,7 +96,7 @@
                 <div *ngIf="charsMapInProgress">Loading</div>
             </div>
         </div>
-        <div class="buttons" #buttons>
+        <div class="buttons" #buttons *ngIf="!(hideSaveButton && hideEntitiesButton && hideResultsButton)">
             <div *ngIf="!charsMapInProgress">
                 <button (click)="save()" *ngIf="!hideSaveButton">Save</button>
                 <button (click)="openEntities()" *ngIf="!hideEntitiesButton">Show Entities</button>
