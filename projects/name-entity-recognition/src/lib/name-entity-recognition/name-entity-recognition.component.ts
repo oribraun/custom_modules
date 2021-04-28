@@ -71,9 +71,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             // add_on: {}
         }
     }
-    @Input() text = '';
-    @Input() entitiesTypes: any = [];
-    @Input() entityPositions: any = [
+    @Input() text: string = '';
+    @Input() entitiesTypes: any[]= [];
+    @Input() entityPositions: any[] = [
         // {
         //     id: 'E1',
         //     prob: 0,
@@ -451,13 +451,16 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
 
     initRecords() {
         let records = [];
+        if(!this.entityPositions) {
+            return;
+        }
         this.entityPositions.map((o) => {
             // console.log('o.recordIds', o)
             const arr = o.recordIds.split(',');
             records = records.concat(arr);
         })
         records = records.filter((o,i) => records.indexOf(o) === i);
-        console.log('records', records)
+        // console.log('records', records)
         const map = this.records.map((o) => o.id);
         for(const i in records) {
             if(map.indexOf(records[i]) === -1) {
