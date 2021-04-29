@@ -470,8 +470,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 this.records.push({
                     id: records[i],
                     number: parseInt(records[i].toString().replace(/^[^0-9]+/, ''), 0).toString(),
-                    background_color: '#209cee',
-                    text_color: '#ffffff',
+                    background_color: '#f5f5f5',
+                    text_color: '#888888',
                 })
             }
         }
