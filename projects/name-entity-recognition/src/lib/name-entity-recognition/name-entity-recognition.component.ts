@@ -105,15 +105,18 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     currentRelationsEntity: any = {};
     animatedModel = false;
     animatedEntitiesModel = false;
-    modalOpen = false;
     entitiesMap:any = [];
-    showEntitiesMap = false;
-    showResults = false;
     currentResults: any;
     onContentScroll = false;
     onContentScrollTimeout;
-
-    initFinish = false;
+    models = {
+        showRelationsModel: false,
+        showEntitiesMapModel: false,
+        showResultsModel: false,
+    }
+    flags = {
+        initFinish: false
+    }
     constructor(
         private nameEntityRecognitionService: NameEntityRecognitionService
     ) {
@@ -136,7 +139,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.changeEvent();
             setTimeout(() => {
                 this.initFixedHeader();
-                this.initFinish = true;
+                this.flags.initFinish = true;
             })
         })
         // this.chunks = this.getChunks();
@@ -739,7 +742,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 this.currentRelationsEntity.records = this.currentRelationsEntity.recordIds.split(',');
                 this.animatedModel = true;
                 setTimeout(() => {
-                    this.modalOpen = true;
+                    this.models.showRelationsModel = true;
                 })
             }
         }
@@ -873,18 +876,18 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         // this.$emit('remove-entity', index);
     }
 
-    open(entity) {
+    openRelationsModel(entity) {
         if(this.startOffset === this.endOffset) {
             this.currentRelationsEntity = entity;
             this.animatedModel = true;
             setTimeout(() => {
-                this.modalOpen = true;
+                this.models.showRelationsModel = true;
             })
         }
     }
 
     close() {
-        this.modalOpen = false;
+        this.models.showRelationsModel = false;
         setTimeout(() => {
             this.animatedModel = false;
             this.currentRelationsEntity = {};
@@ -1250,7 +1253,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
         this.animatedEntitiesModel = true;
         setTimeout(() => {
-            this.showEntitiesMap = true;
+            this.models.showEntitiesMapModel = true;
         })
     }
     openResults() {
@@ -1260,12 +1263,12 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
         this.currentResults = this.buildResults();
         setTimeout(() => {
-            this.showResults = true;
+            this.models.showResultsModel = true;
         })
     }
 
     hideEntities() {
-        this.showEntitiesMap = false;
+        this.models.showEntitiesMapModel = false;
         setTimeout(() => {
             this.animatedEntitiesModel = false;
             this.currentRelationsEntity = {};
@@ -1273,7 +1276,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     hideResults() {
-        this.showResults = false;
+        this.models.showResultsModel = false;
         setTimeout(() => {
             this.animatedEntitiesModel = false;
             this.currentResults = null;
@@ -1327,7 +1330,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     toggleEntitiesMap() {
-        this.showEntitiesMap = !this.showEntitiesMap;
+        this.models.showEntitiesMapModel = !this.models.showEntitiesMapModel;
     }
 
     compareEntity(a: any, b: any) {
