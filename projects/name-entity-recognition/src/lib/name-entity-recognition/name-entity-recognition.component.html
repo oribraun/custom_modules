@@ -38,7 +38,7 @@
         <div class="panel-content" #content>
             <div class="content">
                 <div (mouseup)="setSelectedRange($event)" #nameEntityRecognition *ngIf="charsMap.length && !charsMapInProgress">
-                    <span (mouseenter)="charHover($event, i)" (click)="openEntity(i)" class="char" *ngFor="let obj of charsMap; let i = index;"
+                    <span (mouseenter)="charHover($event, i)" (click)="openEntityRelationsModel(i)" class="char" *ngFor="let obj of charsMap; let i = index;"
                     [ngClass]="obj.classes"
                     [class.endTag]="obj.endTag"
                     [class.startTag]="obj.startTag && i !== 0"
@@ -143,12 +143,12 @@
 <!--    </div>-->
 </div>
 <div class="relations-modal fade" [ngClass]="{show: models.showRelationsModel}" *ngIf="animatedModel">
-    <div class="backdrop" (click)="close()"></div>
+    <div class="backdrop" (click)="closeEntityRelationsModel()"></div>
     <div class="relations-modal-dialog">
         <div class="relations-modal-content">
             <div class="relations-modal-header">
                 <h5 class="relations-modal-title" id="relationsModal">{{currentRelationsEntity.id}} - {{currentRelationsEntity.entity_type.name}}.<br>Relations for - {{text.slice(currentRelationsEntity.start_offset, currentRelationsEntity.end_offset)}}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="close()">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="closeEntityRelationsModel()">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>

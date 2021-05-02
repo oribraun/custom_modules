@@ -6,7 +6,7 @@ import {
     Output,
     ViewChild,
     ViewEncapsulation,
-    AfterViewInit, HostListener, OnChanges, SimpleChanges
+    AfterViewInit, HostListener, OnChanges, SimpleChanges, ChangeDetectorRef
 } from '@angular/core';
 import {count} from 'rxjs/operators';
 import {NameEntityRecognitionService} from '../name-entity-recognition.service';
@@ -118,7 +118,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         initFinish: false
     }
     constructor(
-        private nameEntityRecognitionService: NameEntityRecognitionService
+        private nameEntityRecognitionService: NameEntityRecognitionService,
+        private ref: ChangeDetectorRef
     ) {
         this.colors = this.nameEntityRecognitionService.colors;
     }
@@ -140,10 +141,16 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             setTimeout(() => {
                 this.initFixedHeader();
                 this.flags.initFinish = true;
+                this.changeDetectorRefresh();
             })
         })
         // this.chunks = this.getChunks();
         // this.initAnnotations();
+    }
+
+    changeDetectorRefresh() {
+        this.ref.markForCheck()
+        this.ref.detectChanges()
     }
 
     scrollPos = 0;
@@ -723,7 +730,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
 
-    openEntity(charIndex) {
+    openEntityRelationsModel(charIndex) {
         const sort = this.entityPositions.sort((a, b) => {
             return a.id > b.id ? -1 : 1;
         });
@@ -743,6 +750,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 this.animatedModel = true;
                 setTimeout(() => {
                     this.models.showRelationsModel = true;
+                    this.changeDetectorRefresh();
                 })
             }
         }
@@ -882,16 +890,18 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.animatedModel = true;
             setTimeout(() => {
                 this.models.showRelationsModel = true;
+                this.changeDetectorRefresh();
             })
         }
     }
 
-    close() {
+    closeEntityRelationsModel() {
         this.models.showRelationsModel = false;
         setTimeout(() => {
             this.animatedModel = false;
             this.currentRelationsEntity = {};
             this.currentRelationsEntityIndex = null;
+            this.changeDetectorRefresh();
         }, 300)
     }
 
@@ -1254,6 +1264,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         this.animatedEntitiesModel = true;
         setTimeout(() => {
             this.models.showEntitiesMapModel = true;
+            this.changeDetectorRefresh();
         })
     }
     openResults() {
@@ -1264,6 +1275,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         this.currentResults = this.buildResults();
         setTimeout(() => {
             this.models.showResultsModel = true;
+            this.changeDetectorRefresh();
         })
     }
 
@@ -1272,6 +1284,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         setTimeout(() => {
             this.animatedEntitiesModel = false;
             this.currentRelationsEntity = {};
+            this.changeDetectorRefresh();
         }, 300)
     }
 
@@ -1280,6 +1293,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         setTimeout(() => {
             this.animatedEntitiesModel = false;
             this.currentResults = null;
+            this.changeDetectorRefresh();
         }, 300)
     }
 
