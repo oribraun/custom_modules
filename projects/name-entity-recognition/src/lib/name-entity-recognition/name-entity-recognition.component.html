@@ -38,9 +38,10 @@
         <div class="panel-content" #content>
             <div class="content">
                 <div (mouseup)="setSelectedRange($event)" #nameEntityRecognition *ngIf="charsMap.length && !charsMapInProgress">
-                    <span (mouseenter)="charHover($event, i)" (click)="openEntityRelationsModel(i)" class="char" *ngFor="let obj of charsMap; let i = index;"
+                    <span (mouseenter)="charHover($event, i)" (click)="openEntityRelationsModel(i)" class="text-char" *ngFor="let obj of charsMap; let i = index;"
                     [ngClass]="obj.classes"
                     [class.endTag]="obj.endTag"
+                    [class.newLine]="obj.char === '\n'"
                     [class.startTag]="obj.startTag && i !== 0"
                     [attr.show]="obj.show"
                     [attr.entityNames]="obj.entityNames"

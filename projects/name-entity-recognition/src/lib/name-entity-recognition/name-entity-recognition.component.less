@@ -213,7 +213,7 @@
                 font-size: 1.2em;
                 padding: .75em 0;
                 margin-bottom: 0.6em;
-                .char {
+                .text-char {
                     //display: none;
                     &.visible {
                         display: inline;
@@ -677,7 +677,7 @@
     }
 }
 
-.char {
+.text-char {
     position: relative;
     padding: .2em 0;
     &[class*="labeled"] {
@@ -723,6 +723,10 @@
             //    border-bottom: 4px solid #000;
             //}
         }
+    }
+    &.newLine {
+        //display: block;
+        white-space: pre-line;
     }
 }
 
