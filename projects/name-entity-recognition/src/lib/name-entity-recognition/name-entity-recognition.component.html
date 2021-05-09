@@ -1,4 +1,4 @@
-<div class="name-entity-recognition" [ngClass]="{'hidden': !flags.initFinish}">
+<div class="name-entity-recognition">
     <div class="panel" #panel>
         <header class="panel-header" #header [ngStyle]="defaultDesign.header">
             <div class="header-text">RECORDS <div class="add" (click)="addRecord()"></div></div>
@@ -28,12 +28,15 @@
         <div class="panel-content" #content>
             <div class="content">
                 <div (mouseup)="setSelectedRange($event)" #nameEntityRecognition *ngIf="charsMap.length && !charsMapInProgress">
-                    <span [innerHTML]="fullHtml | safeHtml"></span>
+                    <span *ngIf="flags.initFinish" [innerHTML]="fullHtml | safeHtml"></span>
                 </div>
-                <div *ngIf="charsMapInProgress">Loading</div>
+            </div>
+            <div class="loading" *ngIf="!flags.initFinish">
+                <div>Loading</div>
             </div>
         </div>
-        <div class="buttons" #buttons *ngIf="!(hideSaveButton && hideEntitiesButton && hideResultsButton)">
+        <div class="buttons" #buttons *ngIf="!(hideSaveButton && hideEntitiesButton && hideResultsButton)"
+             [ngClass]="{'hidden': !flags.initFinish}">
             <div *ngIf="!charsMapInProgress">
                 <button type="button" (click)="save()" *ngIf="!hideSaveButton">Save</button>
                 <button type="button" (click)="openEntities()" *ngIf="!hideEntitiesButton">Show Entities</button>

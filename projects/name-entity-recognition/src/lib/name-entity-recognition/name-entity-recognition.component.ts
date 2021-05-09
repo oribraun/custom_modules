@@ -138,7 +138,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         setTimeout(() => {
             this.setCharsMap();
             this.initPositions();
-            this.buildFullHtml()
+            this.buildFullHtml();
             this.changeEvent();
             setTimeout(() => {
                 this.initFixedHeader();
@@ -279,6 +279,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if(this.buttons) {
             buttonsHeight = this.buttons.nativeElement.clientHeight;
         }
+        console.log('buttonsHeight', buttonsHeight)
         this.panel.nativeElement.style.paddingTop = headerHeight + 'px';
         this.panel.nativeElement.style.paddingBottom = buttonsHeight + 'px';
         this.content.nativeElement.style.height = (parentHeight - headerHeight - buttonsHeight) + 'px';
