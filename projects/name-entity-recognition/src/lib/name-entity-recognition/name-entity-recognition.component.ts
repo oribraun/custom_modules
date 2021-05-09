@@ -88,6 +88,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @Input() hideEntitiesButton = false;
     @Input() hideResultsButton = false;
     charsMap = [];
+    fullHtml = '';
     charsMapInProgress = false;
     charsMapTimeout: any;
     colors = [];
@@ -137,6 +138,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         setTimeout(() => {
             this.setCharsMap();
             this.initPositions();
+            this.buildFullHtml()
             this.changeEvent();
             setTimeout(() => {
                 this.initFixedHeader();
@@ -447,6 +449,101 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
 
+    buildFullHtml() {
+        this.fullHtml = '';
+        for(let i = 0; i < this.charsMap.length; i++) {
+            const obj = this.charsMap[i];
+            const span = document.createElement('span');
+            span.classList.add("text-char");
+            span.setAttribute('index', i)
+            span.id = 'char' + i;
+            span.innerHTML = obj.char;
+            if (obj.char === '\n') {
+                span.classList.add('newLine')
+            }
+            const finalSpan = this.setUpHtmlChar(span, obj, i);
+            this.fullHtml += finalSpan.outerHTML;
+        }
+        document.body.addEventListener( 'mouseenter', ( event ) => {
+            if( event.target.classList.contains('text-char') ) {
+                const i = parseInt(event.target.getAttribute('index'));
+                this.charHover(event, i)
+            }
+        })
+        document.body.addEventListener( 'click', ( event ) => {
+            if( event.target.classList.contains('text-char') ) {
+                const i = parseInt(event.target.getAttribute('index'));
+                this.openEntityRelationsModel(i);
+            }
+            if( event.target.classList.contains('remove') ) {
+                const i = parseInt(event.target.getAttribute('index'));
+                this.removeEntitiesFromPositions(i + 1);
+            };
+        } );
+
+        // console.log('this.fullHtml', this.fullHtml)
+    }
+
+    setUpHtmlChar(span, obj, i) {
+        // span.classList.add("text-char");
+        // span.setAttribute('index', i)
+        // span.id = 'char' + i;
+        // span.innerHTML = obj.char;
+        // if (obj.char === '\n') {
+        //     span.classList.add('newLine')
+        // }
+        // const finalSpan = this.setUpHtmlChar(span, obj, i);
+
+        span.removeAttribute('entityNames');
+        span.removeAttribute('entityIds');
+        span.removeAttribute('recordIds');
+        span.removeAttribute('style');
+        span.classList = obj.classes;
+        span.classList.add("text-char");
+        if (obj.endTag) {
+            span.classList.add('endTag')
+        }
+        if (obj.char === '\n') {
+            span.classList.add('newLine')
+        }
+        if (obj.startTag && i !== 0) {
+            span.classList.add('startTag')
+        }
+        if (obj.show) {
+            span.setAttribute('show', true)
+        }
+        if (obj.entityNames) {
+            span.setAttribute('entityNames', obj.entityNames)
+        }
+        if (obj.entityIds) {
+            span.setAttribute('entityIds', obj.entityIds)
+        }
+        if (obj.recordIds) {
+            span.setAttribute('recordIds', obj.recordIds)
+        }
+        if (obj.backgrounds) {
+            span.style.backgroundColor = this.getLastBackground(obj.backgrounds);
+            span.style.background = 'linear-gradient(' + obj.backgrounds + ')';
+        }
+        if(obj.text_color) {
+            span.style.color = obj.text_color;
+        }
+        span.innerHTML = obj.char;
+        if(obj.classes.indexOf('last') > -1) {
+            const div = document.createElement('div');
+            div.id = 'remove' + i;
+            div.classList.add('remove');
+            div.setAttribute('index', i)
+            span.appendChild(div);
+        } else {
+            const remove = document.getElementById('remove' + i);
+            if (remove) {
+                span.removeChild(remove)
+            }
+        }
+        return span;
+    }
+
     resetRecords() {
         this.records = [
             {
@@ -534,6 +631,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 }
                 charsMap.classes = classes.join(' ')
                 this.charsMap[i] = charsMap;
+                this.updateCharHtml(i);
             // }
             // console.log(this.charsMap, this.charsMap)
         }
@@ -595,7 +693,12 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     charsMap.entityIds = entityIds.join(',');
                     charsMap.recordIds = recordIds.join('\n');
                     this.charsMap[i] = charsMap;
-                    this.charsMap[i].text_color = this.nameEntityRecognitionService.generateTextColor(this.charsMap[i].backgrounds);
+                    if (this.charsMap[i].backgrounds.length) {
+                        this.charsMap[i].text_color = this.nameEntityRecognitionService.generateTextColor(this.charsMap[i].backgrounds);
+                    } else {
+                        this.charsMap[i].text_color = '';
+                    }
+                    this.updateCharHtml(i);
                 }
             }
         }
@@ -603,6 +706,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         // this.initPositions();
     }
 
+    updateCharHtml(i) {
+        const span = document.getElementById('char' + i);
+        // console.log('span', span)
+        if(span) {
+            this.setUpHtmlChar(span, this.charsMap[i], i);
+        }
+    }
     updateCharsMapRecords(entity, recordsToFind) {
         for(let i = entity.start_offset; i < entity.end_offset; i++) {
             const recordIds = this.charsMap[i].recordIds.split('\n');
