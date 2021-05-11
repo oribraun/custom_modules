@@ -35,6 +35,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @ViewChild('header') header;
     @ViewChild('content') content;
     @ViewChild('buttons') buttons;
+    @ViewChild('nerTooltip') tooltip;
     @Output() onSave: EventEmitter<any> = new EventEmitter<any>();
     @Output() onChange: EventEmitter<any> = new EventEmitter<any>();
     @Output() onShowEntities: EventEmitter<any> = new EventEmitter<any>();
@@ -89,6 +90,14 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @Input() hideResultsButton = false;
     charsMap = [];
     fullHtml = '';
+    tooltipPos: any = {
+        show: false,
+        text: '',
+        top: '',
+        left: '',
+        right: '',
+        bottom: '',
+    };
     charsMapInProgress = false;
     charsMapTimeout: any;
     colors = [];
@@ -174,6 +183,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
 
     ngAfterViewInit(): void {
         // this.initFixedHeader();
+        this.content.nativeElement.addEventListener('scroll', () => {
+            this.resetToolTip();
+        })
     }
 
     setDesign() {
@@ -226,6 +238,15 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if(changes.entityPositions && !changes.entityPositions.firstChange) {
             this.onPositionsOrTextChange();
         }
+        if(changes.hideSaveButton && !changes.hideSaveButton.firstChange) {
+            this.onPositionsOrTextChange();
+        }
+        if(changes.hideEntitiesButton && !changes.hideEntitiesButton.firstChange) {
+            this.onPositionsOrTextChange();
+        }
+        if(changes.hideResultsButton && !changes.hideResultsButton.firstChange) {
+            this.onPositionsOrTextChange();
+        }
         if(changes.design && !changes.design.firstChange) {
             this.setDesign();
         }
@@ -248,6 +269,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.initPositions();
             this.resetRecords();
             this.initRecords();
+            this.changeDetectorRefresh();
             requestAnimationFrame(() => {
                 this.initFixedHeader();
                 requestAnimationFrame(() => {
@@ -269,6 +291,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         this.initFixedHeader();
     }
 
+    @HostListener('window:scroll', ['$event'])
+    onScroll(event) {
+        this.resetToolTip();
+    }
+
 
     initFixedHeader() {
         const parentHeight = this.panel.nativeElement.parentNode.clientHeight;
@@ -283,15 +310,16 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if(this.buttons) {
             buttonsHeight = this.buttons.nativeElement.clientHeight;
         }
-        // console.log('buttonsHeight', buttonsHeight)
-        // console.log('headerHeight', headerHeight)
-        // console.log('parentHeight', parentHeight)
-        // console.log('panelHeight', panelHeight)
-        // console.log('setUpHeight', setUpHeight)
+        console.log('buttonsHeight', buttonsHeight)
+        console.log('headerHeight', headerHeight)
+        console.log('parentHeight', parentHeight)
+        console.log('panelHeight', panelHeight)
+        console.log('setUpHeight', setUpHeight)
         this.panel.nativeElement.style.paddingTop = headerHeight + 'px';
         this.panel.nativeElement.style.paddingBottom = buttonsHeight + 'px';
-        if(setUpHeight) {
-            this.content.nativeElement.style.height = (parentHeight - headerHeight - buttonsHeight) + 'px';
+        const newHeight = parentHeight - headerHeight - buttonsHeight;
+        if(setUpHeight && newHeight > 1) {
+            this.content.nativeElement.style.height = newHeight + 'px';
         }
         // this.content.nativeElement.style.height = (panelHeight - headerHeight - buttonsHeight) + 'px';
         // this.content.nativeElement.style.height = headerHeight + 'px';
@@ -475,23 +503,50 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             const finalSpan = this.setUpHtmlChar(span, obj, i);
             this.fullHtml += finalSpan.outerHTML;
         }
-        // this.element.nativeElement.addEventListener( 'mouseover', ( event ) => {
-        //     if( event.target.classList.contains('text-char') ) {
-        //         const recordIds = event.target.getAttribute('recordIds');
-        //         const offset = event.target.offsetLeft;
-        //         const font = parseFloat(window.getComputedStyle(event.target).fontSize);
-        //         if(recordIds) {
-        //             console.log('recordIds.length', font)
-        //             console.log('recordIds.length', recordIds.length * font)
-        //             console.log('offset', offset)
-        //         }
-        //         if(recordIds && recordIds.length > offset) {
-        //             console.log('need to fix', offset)
-        //         }
-        //         //         const i = parseInt(event.target.getAttribute('index'));
-        // //         this.charHover(event, i)
-        //     }
-        // })
+        this.element.nativeElement.addEventListener( 'mousemove', ( event ) => {
+            if( !event.target.classList.contains('text-char') ) {
+                this.resetToolTip();
+            }
+        });
+        this.element.nativeElement.addEventListener( 'mouseover', ( event ) => {
+            if( event.target.classList.contains('text-char') ) {
+                const recordIds = event.target.getAttribute('recordIds');
+                const offset = event.target.offsetLeft;
+                var rect = event.target.getBoundingClientRect();
+                if(recordIds) {
+                    this.tooltipPos.top = parseFloat(rect.top + event.target.offsetHeight);
+                    this.tooltipPos.left = parseFloat(rect.left);
+                    this.tooltipPos.text = recordIds;
+                    this.tooltipPos.show = true;
+                    this.changeDetectorRefresh();
+                    if(this.tooltip && this.tooltipPos.left + this.tooltip.nativeElement.clientWidth > this.panel.nativeElement.clientWidth) {
+                        this.tooltipPos.left =  this.tooltipPos.left - this.tooltip.nativeElement.clientWidth;
+                    }
+                    const toolTipMarginTop = 4;
+                    const targetPosition = event.target.offsetTop + event.target.offsetHeight;
+                    const currentSctollTop = this.content.nativeElement.scrollTop;
+                    if(this.tooltip && targetPosition - currentSctollTop + this.tooltip.nativeElement.clientHeight + toolTipMarginTop > this.content.nativeElement.clientHeight) {
+                        this.tooltipPos.top =  this.tooltipPos.top - event.target.offsetHeight - this.tooltip.nativeElement.clientHeight - toolTipMarginTop*2;
+                    }
+                    this.changeDetectorRefresh();
+                } else {
+                    this.resetToolTip();
+                }
+                // const pseudoElement = window.getComputedStyle(event.target, ':before');
+                // let pseudoElementWidth = 0;
+                // pseudoElementWidth += parseFloat(pseudoElement.getPropertyValue('padding-left'));
+                // pseudoElementWidth += parseFloat(pseudoElement.getPropertyValue('width'));
+                // pseudoElementWidth += parseFloat(pseudoElement.getPropertyValue('padding-right'));
+                // if(recordIds && pseudoElementWidth > offset) {
+                //     event.target.classList.add('text-char-left');
+                // }
+        //         const i = parseInt(event.target.getAttribute('index'));
+        //         this.charHover(event, i)
+            } else {
+                // console.log('out of text char')
+                this.resetToolTip();
+            }
+        })
         this.element.nativeElement.addEventListener( 'click', ( event ) => {
             if( event.target.classList.contains('text-char') ) {
                 const i = parseInt(event.target.getAttribute('index'));
@@ -615,6 +670,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             }
             // if(this.charsMap[i].entities.indexOf(entity.id) === -1) {
             // console.log('posEntity', posEntity)
+                if(!this.charsMap[i]) {
+                    return;
+                }
                 const charsMap: any = {...this.charsMap[i]};
                 const entities = charsMap.entities ? charsMap.entities.split(',') : [];
                 const entityNames = charsMap.entityNames ? charsMap.entityNames.split(',') : [];
@@ -623,7 +681,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 entities.push(entity.id);
                 entityNames.push(entity.name);
                 entityIds.push(posEntity.id);
-                recordIds.push(entityNames + ' (' + posEntity.recordIds + ')');
+                recordIds.push(entity.name + ' (' + posEntity.recordIds + ')');
                 // charsMap.recordIds[posEntity.id] = posEntity.recordIds;
                 // charsMap.relationsIds[posEntity.id] = posEntity.relationsIds;
                 charsMap.entities = entities.join(',')
@@ -740,8 +798,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             const recordIds = this.charsMap[i].recordIds.split('\n');
             const entityNames = this.charsMap[i].entityNames.split(',');
             const recordIndex = recordIds.indexOf(entityNames + ' (' + recordsToFind + ')');
-            console.log('recordIds', recordIds)
-            console.log('recordIndex', recordIndex)
+            // console.log('recordIds', recordIds)
+            // console.log('recordIndex', recordIndex)
             if(recordIndex > -1) {
                 // console.log('before', recordIds[recordIndex]);
                 recordIds[recordIndex] = entity.entity_type.name + ' (' + entity.recordIds + ')'
@@ -904,7 +962,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
     mouseUp(e) {
         const sel = window.getSelection().getRangeAt(0);
-        console.log('sel', sel)
+        // console.log('sel', sel)
         const parent = sel.startContainer.parentNode;
         const start = window.getSelection().anchorOffset;
         const end = window.getSelection().focusOffset;
@@ -961,14 +1019,14 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     addEntity(entityId) {
         if (this.validRange()) {
             let indent = 0;
-            console.log('this.startOffset', this.startOffset)
-            console.log('this.textIndent', this.textIndent)
+            // console.log('this.startOffset', this.startOffset)
+            // console.log('this.textIndent', this.textIndent)
             for( const pos in this.textIndent) {
                 if (parseInt(pos, 0) <= this.startOffset) {
                     indent += this.textIndent[pos];
                 }
             }
-            console.log('indent before add', indent)
+            // console.log('indent before add', indent)
             const entitiesMap = this.entityPositions.map((o) => o.id.toString());
             const nextId = this.getNextId(entitiesMap);
             const entity = {
@@ -992,7 +1050,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     removeEntity(entity) {
-        console.log('entity', entity);
+        // console.log('entity', entity);
         const entitiesMap = this.entityPositions.map((o) => o.id);
         const entityIndex = entitiesMap.indexOf(entity.id);
         if (entityIndex > -1) {
@@ -1582,6 +1640,20 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             obj = {...obj, ...objs[i]};
         }
         return obj
+    }
+
+    resetToolTip() {
+        if(this.tooltipPos.show) {
+            this.tooltipPos = {
+                show: false,
+                text: '',
+                top: '',
+                left: '',
+                right: '',
+                bottom: '',
+            }
+            this.changeDetectorRefresh();
+        }
     }
 
 }

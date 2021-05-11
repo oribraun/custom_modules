@@ -213,7 +213,7 @@
             }
             .content {
                 padding: .75em 0;
-                margin-bottom: 0.6em;
+                //margin-bottom: 0.6em;
                 .text-char {
                     //display: none;
                     &.visible {
@@ -321,6 +321,20 @@
                         }
                     }
                 }
+            }
+            .ner-tooltip {
+                position: fixed;
+                background: #000;
+                color: #fff;
+                border-radius: 100em;
+                padding: .6em .6em;
+                line-height: 1;
+                font-size: 0.6em;
+                margin-top: 4px;
+                text-align: center;
+                overflow: hidden;
+                white-space: pre;
+                z-index: 1;
             }
             .loading {
                 //position: absolute;
@@ -694,21 +708,21 @@
         &[recordIds] {
             z-index: 3;
             &:before {
-                content: attr(recordIds);
-                background: #000;
-                color: #fff;
-                border-radius: 100em;
-                padding: .6em .6em;
-                line-height: 1;
-                font-size: 0.6em;
-                position: absolute;
-                margin-top: 4px;
-                top: 100%;
-                right: 0;
-                text-align: center;
-                overflow: hidden;
-                white-space: pre;
-                z-index: 1;
+                //content: attr(recordIds);
+                //background: #000;
+                //color: #fff;
+                //border-radius: 100em;
+                //padding: .6em .6em;
+                //line-height: 1;
+                //font-size: 0.6em;
+                //position: absolute;
+                //margin-top: 4px;
+                //top: 100%;
+                //right: 0;
+                //text-align: center;
+                //overflow: hidden;
+                //white-space: pre;
+                //z-index: 1;
             }
             //&:after {
             //    content: '';
@@ -724,6 +738,16 @@
     &.newLine {
         //display: block;
         white-space: pre-line;
+    }
+}
+.text-char-left {
+    &:hover {
+        &[recordIds] {
+            &:before {
+                //right: auto;
+                //left: 0;
+            }
+        }
     }
 }
 

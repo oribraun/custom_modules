@@ -31,6 +31,15 @@
                 <div (mouseup)="setSelectedRange($event)" #nameEntityRecognition *ngIf="charsMap.length && !charsMapInProgress">
                     <span [innerHTML]="fullHtml | safeHtml"></span>
                 </div>
+                <div class="ner-tooltip" #nerTooltip *ngIf="tooltipPos.show"
+                [ngStyle]="{
+                'top': tooltipPos.top + 'px',
+                'bottom': tooltipPos.bottom + 'px',
+                'left': tooltipPos.left + 'px',
+                'right': tooltipPos.right + 'px'
+                }">
+                    {{tooltipPos.text}}
+                </div>
             </div>
             <div class="loading" *ngIf="!flags.showHtml">
                 <div>Loading</div>
