@@ -6,7 +6,7 @@ import {
     Output,
     ViewChild,
     ViewEncapsulation,
-    AfterViewInit, HostListener, OnChanges, SimpleChanges, ChangeDetectorRef
+    AfterViewInit, HostListener, OnChanges, SimpleChanges, ChangeDetectorRef, ElementRef
 } from '@angular/core';
 import {count} from 'rxjs/operators';
 import {NameEntityRecognitionService} from '../name-entity-recognition.service';
@@ -116,11 +116,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         showResultsModel: false,
     }
     flags = {
-        initFinish: false
+        initFinish: false,
+        showHtml: false
     }
     constructor(
         private nameEntityRecognitionService: NameEntityRecognitionService,
-        private ref: ChangeDetectorRef
+        private ref: ChangeDetectorRef,
+        private element: ElementRef
     ) {
         this.colors = this.nameEntityRecognitionService.colors;
     }
@@ -135,14 +137,15 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         this.initRecords();
         this.generateEntities(this.colors);
         this.charsMapInProgress = true;
-        setTimeout(() => {
+        requestAnimationFrame(() => {
+            this.initFixedHeader();
+            this.flags.initFinish = true;
             this.setCharsMap();
             this.initPositions();
-            this.buildFullHtml();
             this.changeEvent();
-            setTimeout(() => {
-                this.initFixedHeader();
-                this.flags.initFinish = true;
+            requestAnimationFrame(() => {
+                this.buildFullHtml();
+                this.flags.showHtml = true;
                 this.changeDetectorRefresh();
             })
         })
@@ -151,8 +154,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     changeDetectorRefresh() {
-        this.ref.markForCheck()
-        this.ref.detectChanges()
+        this.ref.markForCheck();
+        this.ref.detectChanges();
     }
 
     scrollPos = 0;
@@ -170,7 +173,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     ngAfterViewInit(): void {
-        this.initFixedHeader();
+        // this.initFixedHeader();
     }
 
     setDesign() {
@@ -211,52 +214,49 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
 
     ngOnChanges(changes: SimpleChanges): void {
         if(changes.entitiesTypes && !changes.entitiesTypes.firstChange) {
-            this.resetPosAndMap();
-            this.resetChartMap();
-            // this.setCharsMap2(0, '', true);
-            // this.charsMapInProgress = true;
-            // this.setCharsMap2(0, '', true);
-            this.generateEntities(this.colors);
-            this.charsMapInProgress = true;
-            setTimeout(() => {
-                this.setCharsMap();
-                this.initPositions();
-                this.resetRecords();
-                this.initRecords();
-                setTimeout(() => {
-                    this.initFixedHeader();
-                })
-            })
+            this.onEntitiesChange();
             // console.log('entitiesTypes' , this.entitiesTypes);
             if(!changes.entitiesTypes.firstChange) {
 
             }
         }
         if(changes.text && !changes.text.firstChange) {
-            this.resetPosAndMap();
-            this.resetChartMap();
-            this.charsMapInProgress = true;
-            setTimeout(() => {
-                this.setCharsMap();
-                this.initPositions();
-                this.resetRecords();
-                this.initRecords();
-            })
+            this.onPositionsOrTextChange();
         }
         if(changes.entityPositions && !changes.entityPositions.firstChange) {
-            this.resetPosAndMap();
-            this.resetChartMap();
-            this.charsMapInProgress = true;
-            setTimeout(() => {
-                this.setCharsMap();
-                this.initPositions();
-                this.resetRecords();
-                this.initRecords();
-            })
+            this.onPositionsOrTextChange();
         }
         if(changes.design && !changes.design.firstChange) {
             this.setDesign();
         }
+    }
+
+    onEntitiesChange() {
+        this.generateEntities(this.colors);
+        requestAnimationFrame(() => {
+            this.onPositionsOrTextChange();
+        });
+    }
+
+    onPositionsOrTextChange() {
+        this.resetPosAndMap();
+        this.resetChartMap();
+        this.charsMapInProgress = true;
+        this.flags.showHtml = false;
+        requestAnimationFrame(() => {
+            this.setCharsMap();
+            this.initPositions();
+            this.resetRecords();
+            this.initRecords();
+            requestAnimationFrame(() => {
+                this.initFixedHeader();
+                requestAnimationFrame(() => {
+                    this.buildFullHtml();
+                    this.flags.showHtml = true;
+                    this.changeDetectorRefresh();
+                });
+            })
+        })
     }
 
     resetPosAndMap() {
@@ -273,16 +273,26 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     initFixedHeader() {
         const parentHeight = this.panel.nativeElement.parentNode.clientHeight;
         // console.log('parentHeight', parentHeight)
-        const panelHeight = this.panel.nativeElement.clientHeight;
+        const panelHeight = this.panel.nativeElement.offsetHeight;
+        let setUpHeight = true;
+        if(panelHeight === parentHeight) {
+            setUpHeight = false;
+        }
         const headerHeight = this.header.nativeElement.clientHeight;
         let buttonsHeight = 0;
         if(this.buttons) {
             buttonsHeight = this.buttons.nativeElement.clientHeight;
         }
-        console.log('buttonsHeight', buttonsHeight)
+        // console.log('buttonsHeight', buttonsHeight)
+        // console.log('headerHeight', headerHeight)
+        // console.log('parentHeight', parentHeight)
+        // console.log('panelHeight', panelHeight)
+        // console.log('setUpHeight', setUpHeight)
         this.panel.nativeElement.style.paddingTop = headerHeight + 'px';
         this.panel.nativeElement.style.paddingBottom = buttonsHeight + 'px';
-        this.content.nativeElement.style.height = (parentHeight - headerHeight - buttonsHeight) + 'px';
+        if(setUpHeight) {
+            this.content.nativeElement.style.height = (parentHeight - headerHeight - buttonsHeight) + 'px';
+        }
         // this.content.nativeElement.style.height = (panelHeight - headerHeight - buttonsHeight) + 'px';
         // this.content.nativeElement.style.height = headerHeight + 'px';
         // console.log('headerHeight', headerHeight)
@@ -465,13 +475,24 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             const finalSpan = this.setUpHtmlChar(span, obj, i);
             this.fullHtml += finalSpan.outerHTML;
         }
-        document.body.addEventListener( 'mouseenter', ( event ) => {
-            if( event.target.classList.contains('text-char') ) {
-                const i = parseInt(event.target.getAttribute('index'));
-                this.charHover(event, i)
-            }
-        })
-        document.body.addEventListener( 'click', ( event ) => {
+        // this.element.nativeElement.addEventListener( 'mouseover', ( event ) => {
+        //     if( event.target.classList.contains('text-char') ) {
+        //         const recordIds = event.target.getAttribute('recordIds');
+        //         const offset = event.target.offsetLeft;
+        //         const font = parseFloat(window.getComputedStyle(event.target).fontSize);
+        //         if(recordIds) {
+        //             console.log('recordIds.length', font)
+        //             console.log('recordIds.length', recordIds.length * font)
+        //             console.log('offset', offset)
+        //         }
+        //         if(recordIds && recordIds.length > offset) {
+        //             console.log('need to fix', offset)
+        //         }
+        //         //         const i = parseInt(event.target.getAttribute('index'));
+        // //         this.charHover(event, i)
+        //     }
+        // })
+        this.element.nativeElement.addEventListener( 'click', ( event ) => {
             if( event.target.classList.contains('text-char') ) {
                 const i = parseInt(event.target.getAttribute('index'));
                 this.openEntityRelationsModel(i);
@@ -717,15 +738,17 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     updateCharsMapRecords(entity, recordsToFind) {
         for(let i = entity.start_offset; i < entity.end_offset; i++) {
             const recordIds = this.charsMap[i].recordIds.split('\n');
-            const recordIndex = recordIds.indexOf(entity.id + ' (' + recordsToFind + ')');
-            // console.log('recordIds', recordIds)
-            // console.log('recordIndex', recordIndex)
+            const entityNames = this.charsMap[i].entityNames.split(',');
+            const recordIndex = recordIds.indexOf(entityNames + ' (' + recordsToFind + ')');
+            console.log('recordIds', recordIds)
+            console.log('recordIndex', recordIndex)
             if(recordIndex > -1) {
                 // console.log('before', recordIds[recordIndex]);
-                recordIds[recordIndex] = entity.id + ' (' + entity.recordIds + ')'
+                recordIds[recordIndex] = entity.entity_type.name + ' (' + entity.recordIds + ')'
                 // console.log('after', recordIds[recordIndex]);
             }
             this.charsMap[i].recordIds = recordIds.join('\n');
+            this.updateCharHtml(i);
         }
     }
     addEntityToPositions(entity) {
@@ -855,15 +878,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if(index > -1) {
             this.currentRelationsEntityIndex = index;
             const currentEntity = this.entityPositions[index];
-            if(this.startOffset === this.endOffset) {
-                this.currentRelationsEntity = currentEntity;
-                this.currentRelationsEntity.records = this.currentRelationsEntity.recordIds.split(',');
-                this.animatedModel = true;
-                setTimeout(() => {
-                    this.models.showRelationsModel = true;
-                    this.changeDetectorRefresh();
-                })
-            }
+            this.openRelationsModel(currentEntity);
         }
     }
     charHover(e, index) {
@@ -998,7 +1013,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     openRelationsModel(entity) {
         if(this.startOffset === this.endOffset) {
             this.currentRelationsEntity = entity;
+            this.currentRelationsEntity.records = this.currentRelationsEntity.recordIds.split(',');
             this.animatedModel = true;
+            this.changeDetectorRefresh();
             setTimeout(() => {
                 this.models.showRelationsModel = true;
                 this.changeDetectorRefresh();
@@ -1262,7 +1279,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             text_color: '#888888',
         };
         this.records.push(data);
-        this.initFixedHeader();
+        requestAnimationFrame(() => {
+            this.initFixedHeader();
+        })
     }
 
     removeRecord(id) {
@@ -1278,6 +1297,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.removeRecordFromEntities(recordId);
             this.changeEvent();
         }
+        requestAnimationFrame(() => {
+            this.initFixedHeader();
+        })
         // this.$emit('remove-entity', index);
     }
 
