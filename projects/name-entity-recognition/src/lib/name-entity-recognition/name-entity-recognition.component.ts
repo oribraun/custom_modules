@@ -73,8 +73,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
     @Input() text: string = '';
-    @Input() entitiesTypes: any[]= [];
-    @Input() entityPositions: any[] = [
+    @Input() entitiesTypes: EntityType[]= [];
+    @Input() entityPositions: EntityPosition[] = [
         // {
         //     id: 'E1',
         //     prob: 0,
@@ -88,7 +88,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @Input() hideSaveButton = false;
     @Input() hideEntitiesButton = false;
     @Input() hideResultsButton = false;
-    charsMap = [];
+    private shortKeysMap = {}
+    charsMap: CharDetails[] = [];
     fullHtml = '';
     tooltipPos: any = {
         show: false,
@@ -156,6 +157,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 this.buildFullHtml();
                 this.flags.showHtml = true;
                 this.changeDetectorRefresh();
+                // console.log('this.entitiesTypes', this.entitiesTypes)
+                // console.log('this.entityPositions', this.entityPositions)
+                // console.log('this.charsMap', this.charsMap)
             })
         })
         // this.chunks = this.getChunks();
@@ -310,11 +314,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if(this.buttons) {
             buttonsHeight = this.buttons.nativeElement.clientHeight;
         }
-        console.log('buttonsHeight', buttonsHeight)
-        console.log('headerHeight', headerHeight)
-        console.log('parentHeight', parentHeight)
-        console.log('panelHeight', panelHeight)
-        console.log('setUpHeight', setUpHeight)
+        // console.log('buttonsHeight', buttonsHeight)
+        // console.log('headerHeight', headerHeight)
+        // console.log('parentHeight', parentHeight)
+        // console.log('panelHeight', panelHeight)
+        // console.log('setUpHeight', setUpHeight)
         this.panel.nativeElement.style.paddingTop = headerHeight + 'px';
         this.panel.nativeElement.style.paddingBottom = buttonsHeight + 'px';
         const newHeight = parentHeight - headerHeight - buttonsHeight;
@@ -346,7 +350,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     endTag = true;
                 }
             }
-            this.charsMap.push({
+            this.charsMap.push( new CharDetails({
                 char: this.text[i],
                 show: show,
                 startTag: startTag,
@@ -360,7 +364,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 classes: '',
                 text_color: '',
                 backgrounds: ''
-            })
+            }))
             if(startChar) {
                 if (this.text[i] === '>') {
                     show = true;
@@ -394,7 +398,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                         endTag = true;
                     }
                 }
-                this.charsMap.push({
+                this.charsMap.push(new CharDetails({
                     char: this.text[i],
                     show: show,
                     startTag: startTag,
@@ -408,7 +412,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     classes: '',
                     text_color: '',
                     backgrounds: ''
-                })
+                }))
                 if (startChar) {
                     if (this.text[i] === '>') {
                         show = true;
@@ -447,7 +451,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                         endTag = true;
                     }
                 }
-                this.charsMap.push({
+                this.charsMap.push(new CharDetails({
                     char: this.text[i],
                     show: show,
                     startTag: startTag,
@@ -461,7 +465,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     classes: '',
                     text_color: '',
                     backgrounds: ''
-                })
+                }))
                 if(startChar) {
                     if (this.text[i] === '>') {
                         show = true;
@@ -485,6 +489,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 this.addEntityToCharsMap(entity_type, this.entityPositions[i], start, end);
                 this.addToEntityMap(this.entityPositions[i]);
             }
+            this.entityPositions[i] = new EntityPosition(this.entityPositions[i])
         }
     }
 
@@ -812,7 +817,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     addEntityToPositions(entity) {
         const entitiesMap = this.entityPositions.map((o) => o.id.toString());
         const nextId = this.getNextId(entitiesMap);
-        const position = {
+        const position = new EntityPosition({
             id: this.entityIdPrefix + nextId,
             prob: 0.0,
             start_offset: this.startOffset,
@@ -821,7 +826,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             entity_type: entity,
             recordIds: this.selectedRecords.join(','),
             relationsIds: ''
-        };
+        });
         this.entityPositions.push(position);
 
         // console.log('this.entityPositions', this.entityPositions)
@@ -866,12 +871,44 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             if (!this.entitiesTypes[i].text_color) {
                 this.entitiesTypes[i].text_color = this.nameEntityRecognitionService.getTextColor(color);
             }
+            this.entitiesTypes[i] = new EntityType(this.entitiesTypes[i]);
+            if (this.entitiesTypes[i].short_key) {
+                this.setupShortKey(this.entitiesTypes[i])
+            }
             count++;
         }
         if(this.entitiesTypes.length) {
             this.currentEntity = this.entitiesTypes[0];
         }
         // console.log('this.entitiesTypes', this.entitiesTypes)
+    }
+
+    setupShortKey(entity: EntityType) {
+        this.shortKeysMap[entity.short_key.toUpperCase()] = entity.id;
+        // console.log('this.entitiesTypes[i].short_key', entity)
+    }
+
+    @HostListener('window:keypress', ['$event'])
+    onKeyPress(e) {
+        let keynum;
+        if(window.event) { // IE
+            keynum = e.keyCode;
+        } else if(e.which){ // Netscape/Firefox/Opera
+            keynum = e.which;
+        }
+        const finalKey = String.fromCharCode(keynum).toUpperCase();
+        // console.log('finalKey', finalKey)
+        // console.log('finalKey', e.shiftKey)
+        if (this.shortKeysMap[finalKey] && e.shiftKey) {
+            const entityId = this.shortKeysMap[finalKey];
+            // console.log('entityId', entityId)
+            const map = this.entitiesTypes.map((o) => o.id);
+            const index = map.indexOf(entityId);
+            if(index > -1) {
+                // console.log('index', index)
+                this.selectEntity(this.entitiesTypes[index]);
+            }
+        }
     }
 
     setSelectedRange(e) {
@@ -1029,7 +1066,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             // console.log('indent before add', indent)
             const entitiesMap = this.entityPositions.map((o) => o.id.toString());
             const nextId = this.getNextId(entitiesMap);
-            const entity = {
+            const entity = new EntityPosition({
                 id: this.entityIdPrefix + nextId,
                 prob: 0.0,
                 start_offset: this.startOffset + indent,
@@ -1037,7 +1074,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 entity_id: entityId,
                 recordIds: this.selectedRecords.join(','),
                 relationsIds: ''
-            };
+            });
             this.entityPositions.push(entity);
             this.onAddedEntity();
             // this.$emit('add-entity', entity);
@@ -1656,4 +1693,47 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
 
+}
+
+export class CharDetails {
+    char: string;
+    show: boolean;
+    startTag: boolean;
+    endTag: boolean;
+    entities: string;
+    entityNames: string;
+    entityIds: string;
+    recordIds: string;
+    classes: string;
+    text_color: string;
+    backgrounds: string;
+    constructor(obj?:Partial<CharDetails>) {
+        Object.assign(this, obj);
+    }
+}
+
+export class EntityPosition {
+    id: string;
+    prob: number;
+    start_offset: number;
+    end_offset: number;
+    entity_id: number;
+    entity_type: EntityType;
+    recordIds: string;
+    relationsIds: string;
+
+    constructor(obj?:Partial<EntityPosition>) {
+        Object.assign(this, obj);
+    }
+}
+
+export class EntityType {
+    background_color: string;
+    id: string;
+    name: string;
+    text_color: string;
+    short_key: string;
+    constructor(obj?:Partial<EntityType>) {
+        Object.assign(this, obj);
+    }
 }
