@@ -710,6 +710,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 classes.push('labeled_' + posEntity.id);
                 if(cls) {
                     classes.push(entity.id + '_' + posEntity.id + '_' + cls);
+                    if (entity.as_block) {
+                        classes.push(entity.id + '_' + posEntity.id + '_as_block');
+                    }
                     if(start === end - 1) {
                         classes.push(entity.id + '_' + posEntity.id + '_last');
                     }
@@ -764,6 +767,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                         }
                         if(firstIndex > -1) {
                             classes.splice(firstIndex, 1);
+                            charsMap.classes = classes.join(' ');
+                        }
+                        const asBlock = classes.indexOf(entity.id + '_' + posEntity.id + '_as_block');
+                        if(asBlock > -1) {
+                            classes.splice(asBlock, 1);
                             charsMap.classes = classes.join(' ');
                         }
                         // const labeledIndex = classes.indexOf('labeled');
@@ -1733,6 +1741,7 @@ export class EntityType {
     name: string;
     text_color: string;
     short_key: string;
+    as_block: boolean;
     constructor(obj?:Partial<EntityType>) {
         Object.assign(this, obj);
     }

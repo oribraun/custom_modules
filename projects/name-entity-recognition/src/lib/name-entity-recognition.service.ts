@@ -124,11 +124,13 @@ export class NameEntityRecognitionService {
         let whiteCount = 0;
         for(const i in colors) {
             const color = colorValues(colors[i])
-            const textColor = this.getTextColor('rgba(' + color.join(',') + ')');
-            if(textColor === '#fff') {
-                whiteCount++
-            } else if (textColor === '#000') {
-                blackCount++;
+            if (color) {
+                const textColor = this.getTextColor('rgba(' + color.join(',') + ')');
+                if (textColor === '#fff') {
+                    whiteCount++
+                } else if (textColor === '#000') {
+                    blackCount++;
+                }
             }
         }
         return whiteCount > blackCount ? '#fff' : '#000';
