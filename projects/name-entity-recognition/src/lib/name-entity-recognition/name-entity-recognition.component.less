@@ -740,6 +740,16 @@
         white-space: pre-line;
     }
 }
+.text-char[class*="as_block"]{
+    position: inherit;
+    &:before {
+        content: '';
+        position: absolute;
+        left:0;
+        right:0;
+        border: 1px solid #000;
+    }
+}
 .text-char-left {
     &:hover {
         &[recordIds] {

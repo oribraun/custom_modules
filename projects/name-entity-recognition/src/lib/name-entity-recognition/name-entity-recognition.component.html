@@ -19,6 +19,7 @@
                 <div class="control" *ngFor="let entity of entitiesTypes">
                     <div class="tags">
                         <a class="tag" [ngClass]="{active: currentEntity.id == entity.id}" (click)="selectEntity(entity)"
+                           [title]="entity.short_key ? 'Shift ' + entity.short_key : ''"
                        [ngStyle]="setStyle({'color': entity.text_color, 'background-color': entity.background_color},defaultDesign.tag, (currentEntity.id == entity.id ? defaultDesign.tag_active : {}))">
                             {{entity.name}}
                         </a>
