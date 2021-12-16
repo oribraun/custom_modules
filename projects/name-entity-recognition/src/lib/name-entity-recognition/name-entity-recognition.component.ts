@@ -41,6 +41,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @Output() onShowEntities: EventEmitter<any> = new EventEmitter<any>();
     @Output() onShowResults: EventEmitter<any> = new EventEmitter<any>();
     // @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
+    @Input() ParentHeightChanged;
     @Input() headerDesign = {};
     @Input() design: any = {};
     public defaultDesign = {
@@ -253,6 +254,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
         if(changes.design && !changes.design.firstChange) {
             this.setDesign();
+        }
+        if(changes.ParentHeightChanged && !changes.ParentHeightChanged.firstChange) {
+            this.initFixedHeader();
         }
     }
 

@@ -80,6 +80,7 @@ class ExampleComponent {
              }
          }
      };
+     parentHeight = '500px';
      onSave(results) {
          console.log('results', results);
      }
@@ -93,11 +94,14 @@ class ExampleComponent {
          console.log('onShowResults', results);
      }
  }
+ 
 ```
 
 #how to use
+* ParentHeightChanged - just trigger re arrange lib header and body based on new height
 ```html
 <lib-name-entity-recognition
+    [ParentHeightChanged]="parentHeight"
     [text]="text"
     [design]="design"
     [entitiesTypes]="entitiesTypes"
