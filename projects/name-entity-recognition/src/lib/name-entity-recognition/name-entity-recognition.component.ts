@@ -617,6 +617,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             div.classList.add('remove');
             div.setAttribute('index', i)
             span.appendChild(div);
+            setTimeout(() => {
+                const currSpan = document.getElementById('char' + i);
+                const nextSpan = document.getElementById('char' + (i + 1));
+                if (nextSpan && nextSpan.classList && nextSpan.classList.value.indexOf('newLine') > -1) {
+                    currSpan.classList.add('new_line_after')
+                }
+            })
         } else {
             const remove = document.getElementById('remove' + i);
             if (remove) {

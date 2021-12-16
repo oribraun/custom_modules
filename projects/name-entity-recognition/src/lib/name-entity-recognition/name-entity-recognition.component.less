@@ -725,6 +725,11 @@
                 right: 0;
                 border-bottom: 1px solid #000;
             }
+            &[class*="new_line_after"]{
+                &:after {
+                    right: -100000%;
+                }
+            }
         }
     }
     &:hover {

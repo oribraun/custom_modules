@@ -112,10 +112,13 @@ export class NameEntityRecognitionService {
     getTextColor(color) {
         const rgba = colorValues(color)
         // const rgb = color.replace('rgb(', '').replace('rgba(', '').replace(')', '').split(',');
-        const brightness = Math.round(((parseInt(rgba[0]) * 299) +
+        let brightness = Math.round(((parseInt(rgba[0]) * 299) +
             (parseInt(rgba[1]) * 587) +
             (parseInt(rgba[2]) * 114)) / 1000);
         // console.log(rgba, (brightness > 125) ? '#000' : '#fff')
+        if (!brightness) {
+            brightness = 126;
+        }
         return (brightness > 125) ? '#000' : '#fff';
     }
 
@@ -141,6 +144,8 @@ function colorValues(color)
 {
     if (!color)
         return;
+    if (color.toLowerCase() === 'none')
+        return '';
     if (color.toLowerCase() === 'transparent')
         return [0, 0, 0, 0];
     if (color[0] === '#')
