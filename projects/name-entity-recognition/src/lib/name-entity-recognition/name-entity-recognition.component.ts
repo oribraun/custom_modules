@@ -86,6 +86,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         //     relationsIds: ''
         // }
     ];
+    @Input() relationsOptions: string[] = [];
     @Input() hideSaveButton = false;
     @Input() hideEntitiesButton = false;
     @Input() hideResultsButton = false;
@@ -851,7 +852,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             entity_id: entity.id,
             entity_type: entity,
             recordIds: this.selectedRecords.join(','),
-            relationsIds: ''
+            relationsIds: {}
         });
         this.entityPositions.push(position);
 
@@ -1099,7 +1100,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 end_offset: this.endOffset + indent,
                 entity_id: entityId,
                 recordIds: this.selectedRecords.join(','),
-                relationsIds: ''
+                relationsIds: {}
             });
             this.entityPositions.push(entity);
             this.onAddedEntity();
@@ -1155,19 +1156,25 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     toggleRelations(entity) {
-        let relationsIds = [];
-        if(this.currentRelationsEntity.relationsIds) {
-            relationsIds = this.currentRelationsEntity.relationsIds.split(',');
-        }
-        const index = relationsIds.indexOf(entity.id.toString());
-        if(index > -1) {
-            relationsIds.splice(index, 1);
+        if (this.currentRelationsEntity.relationsIds[entity.id.toString()] !== undefined) {
+            delete this.currentRelationsEntity.relationsIds[entity.id.toString()];
         } else {
-            relationsIds.push(entity.id);
+            let val = '';
+            if (this.relationsOptions.length) {
+                val = this.relationsOptions[0];
+            }
+            this.currentRelationsEntity.relationsIds[entity.id.toString()] = val;
         }
-        this.currentRelationsEntity.relationsIds = relationsIds.join(',');
         this.updateEntityRelations(this.currentRelationsEntity);
         this.changeEvent();
+    }
+
+    changeRelationOption(entity, option) {
+        this.currentRelationsEntity.relationsIds[entity.id.toString()] = option;
+    }
+
+    preetyJson(json) {
+        return Object.keys(json).map(k => k + (json[k] ? ':' + json[k] : '')).join(', ');
     }
 
     createEntity(startOffset, endOffset) {
@@ -1746,7 +1753,7 @@ export class EntityPosition {
     entity_id: number;
     entity_type: EntityType;
     recordIds: string;
-    relationsIds: string;
+    relationsIds: any;
 
     constructor(obj?:Partial<EntityPosition>) {
         Object.assign(this, obj);
@@ -1763,4 +1770,8 @@ export class EntityType {
     constructor(obj?:Partial<EntityType>) {
         Object.assign(this, obj);
     }
+}
+
+export class EntityRelations {
+    id: string
 }

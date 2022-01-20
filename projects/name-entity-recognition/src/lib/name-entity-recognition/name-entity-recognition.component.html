@@ -76,19 +76,29 @@
                 </div>
                 <hr>
                 <div class="options-box">
-                    <div class="item" *ngFor="let l of entityPositions">
-                        <div class="options"
-                             *ngIf="l.id !== currentRelationsEntity.id"
-                             [ngStyle]="l.entity_type && { color: l.entity_type.text_color, backgroundColor: l.entity_type.background_color }">
-                            <div class="label with-title-tile"
-                                 [attr.title]="l.entity_type && l.entity_type.name">
-                                <label for="">
-                                    <input class="checkbox" type="checkbox"
-                                           [checked]="currentRelationsEntity.relationsIds.indexOf(l.id) > -1"
-                                           (click)="toggleRelations(l)">
-                                    {{text.slice(l.start_offset, l.end_offset)}}
-                                </label>
+                    <div class="item-wrapper" *ngFor="let l of entityPositions">
+                        <div class="item">
+                            <div class="options"
+                                 *ngIf="l.id !== currentRelationsEntity.id"
+                                 [ngStyle]="l.entity_type && { color: l.entity_type.text_color, backgroundColor: l.entity_type.background_color }">
+                                <div class="label with-title-tile"
+                                     [attr.title]="l.entity_type && l.entity_type.name">
+                                    <label for="">
+                                        <input class="checkbox" type="checkbox"
+                                               [checked]="currentRelationsEntity.relationsIds[l.id] ? 1 : 0"
+                                               (click)="toggleRelations(l)">
+                                        {{text.slice(l.start_offset, l.end_offset)}}
+                                    </label>
+                                </div>
                             </div>
+                        </div>
+                        <div class="select-option" *ngIf="l.id !== currentRelationsEntity.id && relationsOptions.length">
+                            <select name="" id="" [disabled]="currentRelationsEntity.relationsIds[l.id] ? 0 : 1"
+                                    (change)="changeRelationOption(l, $event.target.value)">
+                                <option *ngFor="let o of relationsOptions" [value]="o"
+                                        [selected]="currentRelationsEntity.relationsIds[l.id] == o"
+                                >{{o}}</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -122,7 +132,7 @@
                                 <p>
                                     <b>Id</b> - {{item.res.id}},
                                     <b>Records</b> - {{item.res.records}},
-                                    <b>relations ids</b> - {{item.res.relationsIds}},
+                                    <b>relations ids</b> - {{preetyJson(item.res.relationsIds)}},
                                     <!--                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,-->
                                     <b>start index</b> {{item.res.start_index}},
                                     <b>end index</b> {{item.res.end_index}}
@@ -157,7 +167,7 @@
                             <li>
                             {{entity.key}}
                             <ul class="results" *ngFor="let item of entity.value; let i = index">
-                                <li>{{item.id}}.{{item.text}}<span *ngIf="item.relationsIds"> - relations to {{item.relationsIds}}</span></li>
+                                <li>{{item.id}}.{{item.text}}<span *ngIf="item.relationsIds"> - relations to {{preetyJson(item.relationsIds)}}</span></li>
                             </ul>
                             </li>
                         </ul>
