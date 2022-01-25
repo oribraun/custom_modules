@@ -51,6 +51,7 @@ class ExampleComponent {
          },
      ];
      public positions = [];
+     public relationsOptions = ['option 1', 'option 2', 'option 3'];
      public text = 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups';
      public design = {
          header: {
@@ -106,6 +107,7 @@ class ExampleComponent {
     [design]="design"
     [entitiesTypes]="entitiesTypes"
     [entityPositions]="positions"
+    [relationsOptions]="relationsOptions"
     [hideSaveButton]="true"
     [hideEntitiesButton]="true"
     [hideResultsButton]="true"
