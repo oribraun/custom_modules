@@ -705,7 +705,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 entities.push(entity.id);
                 entityNames.push(entity.name);
                 entityIds.push(posEntity.id);
-                recordIds.push(entity.name + ' (' + posEntity.recordIds + ')');
+                recordIds.push(posEntity.id + '-' + entity.name + ' (' + posEntity.recordIds + ')');
                 // charsMap.recordIds[posEntity.id] = posEntity.recordIds;
                 // charsMap.relationsIds[posEntity.id] = posEntity.relationsIds;
                 charsMap.entities = entities.join(',')

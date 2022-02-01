@@ -76,13 +76,13 @@
                 </div>
                 <hr>
                 <div class="options-box">
-                    <div class="item-wrapper" *ngFor="let l of entityPositions">
+                    <div class="item-wrapper" *ngFor="let l of sortedEntityPositions()">
                         <div class="item">
                             <div class="options"
                                  *ngIf="l.id !== currentRelationsEntity.id"
                                  [ngStyle]="l.entity_type && { color: l.entity_type.text_color, backgroundColor: l.entity_type.background_color }">
                                 <div class="label with-title-tile"
-                                     [attr.title]="l.entity_type && l.entity_type.name">
+                                     [attr.title]="l.entity_type && (l.id + '-' + l.entity_type.name)">
                                     <label for="">
                                         <input class="checkbox" type="checkbox"
                                                [checked]="currentRelationsEntity.relationsIds[l.id] ? 1 : 0"
