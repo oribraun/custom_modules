@@ -86,7 +86,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         //     relationsIds: ''
         // }
     ];
-    @Input() relationsOptions: string[] = [];
+    @Input() relationOptions: string[] = [];
     @Input() hideSaveButton = false;
     @Input() hideEntitiesButton = false;
     @Input() hideResultsButton = false;
@@ -1160,8 +1160,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             delete this.currentRelationsEntity.relationsIds[entity.id.toString()];
         } else {
             let val = '';
-            if (this.relationsOptions.length) {
-                val = this.relationsOptions[0];
+            if (this.relationOptions.length) {
+                val = this.relationOptions[0];
             }
             this.currentRelationsEntity.relationsIds[entity.id.toString()] = val;
         }

@@ -92,10 +92,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="select-option" *ngIf="l.id !== currentRelationsEntity.id && relationsOptions.length">
+                        <div class="select-option" *ngIf="l.id !== currentRelationsEntity.id && relationOptions.length">
                             <select name="" id="" [disabled]="currentRelationsEntity.relationsIds[l.id] ? 0 : 1"
                                     (change)="changeRelationOption(l, $event.target.value)">
-                                <option *ngFor="let o of relationsOptions" [value]="o"
+                                <option *ngFor="let o of relationOptions" [value]="o"
                                         [selected]="currentRelationsEntity.relationsIds[l.id] == o"
                                 >{{o}}</option>
                             </select>

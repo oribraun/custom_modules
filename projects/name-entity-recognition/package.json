@@ -1,6 +1,6 @@
 {
     "name": "name-entity-recognition",
-    "version": "0.0.81",
+    "version": "0.0.82",
     "peerDependencies": {
         "@angular/common": "^12.1.4",
         "@angular/core": "^12.1.4"
