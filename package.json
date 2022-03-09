@@ -10,7 +10,8 @@
     "e2e": "ng e2e",
     "build-ng-trix-patch": "ng build ng-trix-lib",
     "build-ng-trix-minor": "ng build ng-trix-lib",
-    "build-ng-trix-major": "ng build ng-trix-lib"
+    "build-ng-trix-major": "ng build ng-trix-lib",
+    "build-ner": "ng build --project name-entity-recognition --configuration production"
   },
   "private": true,
   "dependencies": {
