@@ -1,4 +1,5 @@
-<div class="name-entity-recognition" [ngClass]="{'hidden': !flags.initFinish}">
+<div class="name-entity-recognition"
+     [ngClass]="{'hidden': !flags.initFinish}">
     <div class="panel" #panel>
         <header class="panel-header" #header [ngStyle]="defaultDesign.header">
             <div class="header-text">RECORDS <div class="add" (click)="addRecord()"></div></div>
@@ -16,14 +17,9 @@
             <div class="header-text">ENTITY TYPES</div>
             <div class="field">
                 <div class="control" *ngFor="let entity of entitiesTypes">
-                    <!--                <div class="tags has-addons">-->
-                    <!--                    <a class="tag" (click)="addEntity(label.id)" [ngStyle]="{'color': label.text_color, 'background-color': label.background_color}">-->
-                    <!--                        {{label.text}}-->
-                    <!--                    </a>-->
-                    <!--                    <span class="tag">{{label.shortcut}}</span>-->
-                    <!--                </div>-->
                     <div class="tags">
                         <a class="tag" [ngClass]="{active: currentEntity.id == entity.id}" (click)="selectEntity(entity)"
+                           [title]="entity.short_key ? 'Shift ' + entity.short_key : ''"
                        [ngStyle]="setStyle({'color': entity.text_color, 'background-color': entity.background_color},defaultDesign.tag, (currentEntity.id == entity.id ? defaultDesign.tag_active : {}))">
                             {{entity.name}}
                         </a>
@@ -31,117 +27,33 @@
                 </div>
             </div>
         </header>
-        <!--    <div class="entities">-->
-        <!--        <h4>selected Entities</h4>-->
-        <!--        <span *ngFor="let e of selectedEntities; let i = index">{{e}}<span *ngIf="i !== selectedEntities.length - 1">, </span></span>-->
-        <!--    </div>-->
         <div class="panel-content" #content>
-            <div class="content">
+            <div class="content" *ngIf="flags.showHtml">
                 <div (mouseup)="setSelectedRange($event)" #nameEntityRecognition *ngIf="charsMap.length && !charsMapInProgress">
-                    <span (mouseenter)="charHover($event, i)" (click)="openEntityRelationsModel(i)" class="text-char" *ngFor="let obj of charsMap; let i = index;"
-                    [ngClass]="obj.classes"
-                    [class.endTag]="obj.endTag"
-                    [class.newLine]="obj.char === '\n'"
-                    [class.startTag]="obj.startTag && i !== 0"
-                    [attr.show]="obj.show"
-                    [attr.entityNames]="obj.entityNames"
-                    [attr.entityIds]="obj.entityIds"
-                    [attr.recordIds]="obj.recordIds ? obj.recordIds : null"
-                    [attr.index]="i"
-                    [ngStyle]="{
-                    'background-color1': obj.backgrounds,
-                    'background-color': getLastBackground(obj.backgrounds),
-                    'background': 'linear-gradient(' + obj.backgrounds + ')',
-                    'color': obj.text_color
-                    }"><!--
-                    -->{{obj.char}}<!--
-                    --> <div (click)="removeEntitiesFromPositions(i + 1)" class="remove" *ngIf="obj.classes.indexOf('last') > -1">
-
-                    </div><!--
-                --></span>
-                    <!--                        <span class="label with-label-name" *ngFor="let r of chunks"-->
-                    <!--                             [ngClass]="{tag: r.entity && r.entity.text_color}"-->
-                    <!--                             [ngStyle]="r.entity && { color: r.entity.text_color, backgroundColor: r.entity.background_color }"-->
-                    <!--                        [attr.title]="r.entity && r.entity.text">{{text.slice(r.start_offset, r.end_offset)}}&lt;!&ndash;-->
-                    <!--                        &ndash;&gt;<span class="current-label-name" *ngIf="r.entity">{{r.entity.text}}</span><div class="remove is-small"-->
-                    <!--                                 *ngIf="r.entity && r.entity.text_color"-->
-                    <!--                                 (click)="removeEntity(r)">-->
-                    <!--                            </div>-->
-                    <!--                        </span>-->
-<!--                    <span (click)="r.entity_type && openRelationsModel(r)" class="label with-title-tile {{r.entity_type && 'pointer'}}" *ngFor="let r of chunks"-->
-<!--                          [ngClass]="{tag: r.entity_type && r.entity_type.text_color, 'with-indent': r.indent}"-->
-<!--                          [ngStyle]="r.entity_type && { color: r.entity_type.text_color, backgroundColor: r.entity_type.background_color }"-->
-<!--                          [attr.start_offset]="r.start_offset"-->
-<!--                          [attr.end_offset]="r.end_offset"-->
-<!--                          [attr.indent_from]="r.indent_from"-->
-<!--                          [attr.indent]="r.indent"-->
-<!--                          [attr.title]="r.entity_type && r.entity_type.name">{{text.slice(r.start_offset, r.end_offset)}}&lt;!&ndash;-->
-<!--                        &ndash;&gt;<div class="remove is-small"-->
-<!--                                *ngIf="r.entity_type && r.entity_type.text_color"-->
-<!--                                (click)="removeEntity(r)">-->
-<!--                            </div>-->
-<!--                        </span>-->
-                    <!--                <span *ngFor="let r of chunks">-->
-                    <!--                    {{text.slice(r.start_offset, r.end_offset)}}-->
-                    <!--                </span>-->
-                    <!--                <span *ngFor="let r of chunks"-->
-                    <!--                      [ngClass]="{tag: r.entity && r.entity.text_color}"-->
-                    <!--                      [ngStyle]="r.entity && { color: r.entity.text_color, backgroundColor: r.entity.background_color }"-->
-                    <!--                ><span [innerHTML]="text.slice(r.start_offset, r.end_offset)"></span>&lt;!&ndash;-->
-                    <!--                    &ndash;&gt;<button class="delete is-small"-->
-                    <!--                               *ngIf="r.entity && r.entity.text_color"-->
-                    <!--                               (click)="removeEntity(r)">-->
-                    <!--                        </button>-->
-                    <!--                    </span>-->
+                    <span [innerHTML]="fullHtml | safeHtml"></span>
                 </div>
-                <div *ngIf="charsMapInProgress">Loading</div>
+                <div class="ner-tooltip" #nerTooltip *ngIf="tooltipPos.show"
+                [ngStyle]="{
+                'top': tooltipPos.top + 'px',
+                'bottom': tooltipPos.bottom + 'px',
+                'left': tooltipPos.left + 'px',
+                'right': tooltipPos.right + 'px'
+                }">
+                    {{tooltipPos.text}}
+                </div>
+            </div>
+            <div class="loading" *ngIf="!flags.showHtml">
+                <div>Loading</div>
             </div>
         </div>
         <div class="buttons" #buttons *ngIf="!(hideSaveButton && hideEntitiesButton && hideResultsButton)">
-            <div *ngIf="!charsMapInProgress">
+            <div>
                 <button type="button" (click)="save()" *ngIf="!hideSaveButton">Save</button>
                 <button type="button" (click)="openEntities()" *ngIf="!hideEntitiesButton">Show Entities</button>
                 <button type="button" (click)="openResults()" *ngIf="!hideResultsButton">Show Results</button>
             </div>
         </div>
     </div>
-    <!--    <div>-->
-    <!--        {{labelPositions | json}}-->
-    <!--    </div>-->
-    <!--    <h1>Real</h1>-->
-    <!--    <div>{{text}}</div>-->
-<!--    <div class="entities-type-button">-->
-<!--        <div class="arrow" (click)="toggleEntitiesMap()"></div>-->
-<!--    </div>-->
-<!--    <div class="entities-type-map-wrapper">-->
-<!--        <div class="entities-type-map-box"-->
-<!--             [@show-panel]="showEntitiesMap ? 'true' : 'false'">-->
-<!--            <div class="entities-type-map" *ngIf="entityPositions.length">-->
-<!--                <div *ngFor="let item of entitiesMap">-->
-<!--                    <div class="header">-->
-<!--                        <div class="label with-title-tile"-->
-<!--                             [ngStyle]="{ color: item.res.entity_color, backgroundColor: item.res.entity_background }"-->
-<!--                             [attr.title]="item.res.entity_type">-->
-<!--                            {{item.key}}-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--    &lt;!&ndash;                <h4><span style="border-bottom: 1px solid {{item.value.entity_background}}">{{item.key}}</span></h4>&ndash;&gt;-->
-<!--                    <p>-->
-<!--                        <b>Id</b> - {{item.res.id}},-->
-<!--                        <b>Records</b> - {{item.res.records}},-->
-<!--                        <b>relations ids</b> - {{item.res.relationsIds}},-->
-<!--    &lt;!&ndash;                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,&ndash;&gt;-->
-<!--                        <b>start index</b> {{item.res.start_index}},-->
-<!--                        <b>end index</b> {{item.res.end_index}}-->
-<!--                    </p>-->
-<!--    &lt;!&ndash;                {{item.key}} <span style="font-family: monospace">-></span> {{item.value | json}}&ndash;&gt;-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="entities-type-map" *ngIf="!entityPositions.length">-->
-<!--                    No Entities-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
 </div>
 <div class="relations-modal fade" [ngClass]="{show: models.showRelationsModel}" *ngIf="animatedModel">
     <div class="backdrop" (click)="closeEntityRelationsModel()"></div>
@@ -162,20 +74,31 @@
                     --></span>
                     </div>
                 </div>
+                <hr>
                 <div class="options-box">
-                    <div class="item" *ngFor="let l of entityPositions">
-                        <div class="options"
-                             *ngIf="l.id !== currentRelationsEntity.id"
-                             [ngStyle]="l.entity_type && { color: l.entity_type.text_color, backgroundColor: l.entity_type.background_color }">
-                            <div class="label with-title-tile"
-                                 [attr.title]="l.entity_type && l.entity_type.name">
-                                <label for="">
-                                    <input class="checkbox" type="checkbox"
-                                           [checked]="currentRelationsEntity.relationsIds.indexOf(l.id) > -1"
-                                           (click)="toggleRelations(l)">
-                                    {{text.slice(l.start_offset, l.end_offset)}}
-                                </label>
+                    <div class="item-wrapper" *ngFor="let l of sortedEntityPositions()">
+                        <div class="item">
+                            <div class="options"
+                                 *ngIf="l.id !== currentRelationsEntity.id"
+                                 [ngStyle]="l.entity_type && { color: l.entity_type.text_color, backgroundColor: l.entity_type.background_color }">
+                                <div class="label with-title-tile"
+                                     [attr.title]="l.entity_type && (l.id + '-' + l.entity_type.name)">
+                                    <label for="">
+                                        <input class="checkbox" type="checkbox"
+                                               [checked]="currentRelationsEntity.relationsIds[l.id] ? 1 : 0"
+                                               (click)="toggleRelations(l)">
+                                        {{text.slice(l.start_offset, l.end_offset)}}
+                                    </label>
+                                </div>
                             </div>
+                        </div>
+                        <div class="select-option" *ngIf="l.id !== currentRelationsEntity.id && relationOptions.length">
+                            <select name="" id="" [disabled]="currentRelationsEntity.relationsIds[l.id] ? 0 : 1"
+                                    (change)="changeRelationOption(l, $event.target.value)">
+                                <option *ngFor="let o of relationOptions" [value]="o"
+                                        [selected]="currentRelationsEntity.relationsIds[l.id] == o"
+                                >{{o}}</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -209,7 +132,7 @@
                                 <p>
                                     <b>Id</b> - {{item.res.id}},
                                     <b>Records</b> - {{item.res.records}},
-                                    <b>relations ids</b> - {{item.res.relationsIds}},
+                                    <b>relations ids</b> - {{preetyJson(item.res.relationsIds)}},
                                     <!--                    <b>entity type</b> - <span style="box-shadow: 0px 5px 3px -3px {{item.value.entity_background}}">{{item.value.entity_type}}</span>,-->
                                     <b>start index</b> {{item.res.start_index}},
                                     <b>end index</b> {{item.res.end_index}}
@@ -244,7 +167,7 @@
                             <li>
                             {{entity.key}}
                             <ul class="results" *ngFor="let item of entity.value; let i = index">
-                                <li>{{item.id}}.{{item.text}}<span *ngIf="item.relationsIds"> - relations to {{item.relationsIds}}</span></li>
+                                <li>{{item.id}}.{{item.text}}<span *ngIf="item.relationsIds"> - relations to {{preetyJson(item.relationsIds)}}</span></li>
                             </ul>
                             </li>
                         </ul>

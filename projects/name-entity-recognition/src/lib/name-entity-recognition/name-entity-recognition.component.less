@@ -4,7 +4,8 @@
 .name-entity-recognition {
     position: relative;
     height: 100%;
-    &.hidden {
+    font-family: 'Open Sans', sans-serif !important;
+    .hidden {
         visibility: hidden;
     }
     .panel {
@@ -194,11 +195,14 @@
             padding: ~'.75em @{padding}em';
         }
         .panel-content {
+            position: relative;
             padding: ~'0 @{padding}em';
             max-height: 100%;
             min-height: 100%;
             overflow-x: auto;
             overflow-y: auto;
+            line-height: 2;
+            font-size: 1.2em;
             ::-moz-selection { /* Code for Firefox */
                 color: #fff;
                 background: #83b3cf;
@@ -209,10 +213,9 @@
                 background: #83b3cf;
             }
             .content {
-                line-height: 2;
-                font-size: 1.2em;
                 padding: .75em 0;
-                margin-bottom: 0.6em;
+                overflow: hidden;
+                //margin-bottom: 0.6em;
                 .text-char {
                     //display: none;
                     &.visible {
@@ -321,6 +324,25 @@
                     }
                 }
             }
+            .ner-tooltip {
+                position: fixed;
+                background: #000;
+                color: #fff;
+                border-radius: 100em;
+                padding: .6em .6em;
+                line-height: 1;
+                font-size: 0.6em;
+                margin-top: 4px;
+                text-align: center;
+                overflow: hidden;
+                white-space: pre;
+                z-index: 1;
+            }
+            .loading {
+                //position: absolute;
+                //top:0;
+                padding: 0.75em 0 0;
+            }
         }
         .buttons {
             padding: ~'.75em @{padding}em';
@@ -413,9 +435,7 @@
         opacity: 0;
         transition: opacity .15s linear;
         .relations-modal-dialog, .entities-modal-dialog {
-            transition: -webkit-transform .3s ease-out;
             transition: transform .3s ease-out;
-            transition: transform .3s ease-out,-webkit-transform .3s ease-out;
             -webkit-transform: translate(0,-25%);
             transform: translate(0,-25%);
         }
@@ -467,6 +487,9 @@
                     line-height: 1.5;
                     font-size: 1.25rem;
                     margin: 0;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
                 }
 
                 .close {
@@ -507,21 +530,32 @@
                 }
                 .options-box {
                     text-align: center;
-                    .item {
+                    .item-wrapper {
                         display: inline-block;
-                        .options {
-                            display: inline-block;
-                            vertical-align: top;
-                            line-height: 1.5;
-                            border-radius: 4px;
-                            margin: .25em;
-                            padding: .25em;
-
-                            .label {
-                                position: relative;
-                                line-height: 1;
+                        .item {
+                            .options {
                                 display: inline-block;
                                 vertical-align: top;
+                                border-radius: 4px;
+                                margin: .25em;
+                                padding: .25em .25em 0;
+
+                                .label {
+                                    position: relative;
+                                    line-height: 1;
+                                    display: inline-block;
+                                    vertical-align: top;
+                                    background: inherit;
+                                }
+                            }
+                        }
+                        .select-option {
+                            select {
+                                border: none;
+                                box-shadow: 0px 0 5px #ccc;
+                                border-radius: 4px;
+                                color: rgb(0, 0, 0);
+                                outline: none;
                             }
                         }
                     }
@@ -541,6 +575,10 @@
                         }
                     }
                 }
+            }
+            .relations-modal-body {
+                max-height: 500px;
+                overflow: auto;
             }
             .relations-modal-footer, .entities-modal-footer {
                 display: -webkit-box;
@@ -645,25 +683,11 @@
             color: inherit;
             border-bottom-left-radius: 4px;
             border-bottom-right-radius: 4px;
-            padding: .15em 0.2em;
+            padding: 0.25em;
             line-height: 1;
             font-size: 0.6em;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 1;
-            text-align: center;
-            overflow: hidden;
-        }
-        &::before {
-            content: '';
-            position: absolute;
-            top:100%;
-            left:.2em;
-            right:.2em;
+            display: block;
             border-top: 1px solid #fff;
-            z-index: 2;
         }
     }
     &.pointer {
@@ -680,38 +704,66 @@
 .text-char {
     position: relative;
     padding: .2em 0;
+    letter-spacing: 0.0001px;
     &[class*="labeled"] {
         cursor: pointer;
     }
     &[class*="first"] {
         border-top-left-radius: 4px;
         border-bottom-left-radius: 4px;
-        padding-left: .2em;
+        //padding-left: .1em;
+        &[class*="as_block"]{
+            position: relative;
+            &:after {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: -1px;
+                right: -100000%;
+                border-bottom: 1px solid #000;
+            }
+        }
     }
     &[class*="last"] {
         border-top-right-radius: 4px;
         border-bottom-right-radius: 4px;
-        padding-right: .2em;
+        //padding-right: .1em;
+        &[class*="as_block"]{
+            position: relative;
+            &:after {
+                content: '';
+                position: absolute;
+                left: -10000%;
+                bottom: -1px;
+                right: 0;
+                border-bottom: 1px solid #000;
+            }
+            &[class*="new_line_after"]{
+                &:after {
+                    right: -100000%;
+                }
+            }
+        }
     }
     &:hover {
         &[recordIds] {
             z-index: 3;
             &:before {
-                content: attr(recordIds);
-                background: #000;
-                color: #fff;
-                border-radius: 100em;
-                padding: .6em .6em;
-                line-height: 1;
-                font-size: 0.6em;
-                position: absolute;
-                margin-top: 4px;
-                top: 100%;
-                right: 0;
-                text-align: center;
-                overflow: hidden;
-                white-space: pre;
-                z-index: 1;
+                //content: attr(recordIds);
+                //background: #000;
+                //color: #fff;
+                //border-radius: 100em;
+                //padding: .6em .6em;
+                //line-height: 1;
+                //font-size: 0.6em;
+                //position: absolute;
+                //margin-top: 4px;
+                //top: 100%;
+                //right: 0;
+                //text-align: center;
+                //overflow: hidden;
+                //white-space: pre;
+                //z-index: 1;
             }
             //&:after {
             //    content: '';
@@ -727,6 +779,16 @@
     &.newLine {
         //display: block;
         white-space: pre-line;
+    }
+}
+.text-char-left {
+    &:hover {
+        &[recordIds] {
+            &:before {
+                //right: auto;
+                //left: 0;
+            }
+        }
     }
 }
 

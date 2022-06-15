@@ -1,11 +1,11 @@
 {
-  "name": "name-entity-recognition",
-  "version": "0.0.40",
-  "peerDependencies": {
-    "@angular/common": "^11.2.1",
-    "@angular/core": "^11.2.1"
-  },
-  "dependencies": {
-    "tslib": "^2.0.0"
-  }
+    "name": "name-entity-recognition",
+    "version": "0.0.84",
+    "peerDependencies": {
+        "@angular/common": "^12.1.4",
+        "@angular/core": "^12.1.4"
+    },
+    "dependencies": {
+        "tslib": "^2.0.0"
+    }
 }

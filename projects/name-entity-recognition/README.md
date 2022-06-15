@@ -51,6 +51,7 @@ class ExampleComponent {
          },
      ];
      public positions = [];
+     public relationOptions = ['option 1', 'option 2', 'option 3'];
      public text = 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups';
      public design = {
          header: {
@@ -80,6 +81,7 @@ class ExampleComponent {
              }
          }
      };
+     parentHeight = '500px';
      onSave(results) {
          console.log('results', results);
      }
@@ -93,15 +95,19 @@ class ExampleComponent {
          console.log('onShowResults', results);
      }
  }
+ 
 ```
 
 #how to use
+* ParentHeightChanged - just trigger re arrange lib header and body based on new height
 ```html
 <lib-name-entity-recognition
+    [ParentHeightChanged]="parentHeight"
     [text]="text"
     [design]="design"
     [entitiesTypes]="entitiesTypes"
     [entityPositions]="positions"
+    [relationOptions]="relationOptions"
     [hideSaveButton]="true"
     [hideEntitiesButton]="true"
     [hideResultsButton]="true"

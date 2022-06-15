@@ -6,7 +6,7 @@ import {
     Output,
     ViewChild,
     ViewEncapsulation,
-    AfterViewInit, HostListener, OnChanges, SimpleChanges, ChangeDetectorRef
+    AfterViewInit, HostListener, OnChanges, SimpleChanges, ChangeDetectorRef, ElementRef
 } from '@angular/core';
 import {count} from 'rxjs/operators';
 import {NameEntityRecognitionService} from '../name-entity-recognition.service';
@@ -35,11 +35,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @ViewChild('header') header;
     @ViewChild('content') content;
     @ViewChild('buttons') buttons;
+    @ViewChild('nerTooltip') tooltip;
     @Output() onSave: EventEmitter<any> = new EventEmitter<any>();
     @Output() onChange: EventEmitter<any> = new EventEmitter<any>();
     @Output() onShowEntities: EventEmitter<any> = new EventEmitter<any>();
     @Output() onShowResults: EventEmitter<any> = new EventEmitter<any>();
     // @Input() text = 'Barack Hussein Obama II (born August 4, 1961) is an American attorney and politician who served as the 44th President of the United States from January 20, 2009, to January 20, 2017. A member of the Democratic Party, he was the first African American to serve as president. He was previously a United States Senator from Illinois and a member of the Illinois State Senate.';
+    @Input() ParentHeightChanged;
     @Input() headerDesign = {};
     @Input() design: any = {};
     public defaultDesign = {
@@ -72,8 +74,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
     }
     @Input() text: string = '';
-    @Input() entitiesTypes: any[]= [];
-    @Input() entityPositions: any[] = [
+    @Input() entitiesTypes: EntityType[]= [];
+    @Input() entityPositions: EntityPosition[] = [
         // {
         //     id: 'E1',
         //     prob: 0,
@@ -84,10 +86,21 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         //     relationsIds: ''
         // }
     ];
+    @Input() relationOptions: string[] = [];
     @Input() hideSaveButton = false;
     @Input() hideEntitiesButton = false;
     @Input() hideResultsButton = false;
-    charsMap = [];
+    private shortKeysMap = {}
+    charsMap: CharDetails[] = [];
+    fullHtml = '';
+    tooltipPos: any = {
+        show: false,
+        text: '',
+        top: '',
+        left: '',
+        right: '',
+        bottom: '',
+    };
     charsMapInProgress = false;
     charsMapTimeout: any;
     colors = [];
@@ -115,11 +128,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         showResultsModel: false,
     }
     flags = {
-        initFinish: false
+        initFinish: false,
+        showHtml: false
     }
     constructor(
         private nameEntityRecognitionService: NameEntityRecognitionService,
-        private ref: ChangeDetectorRef
+        private ref: ChangeDetectorRef,
+        private element: ElementRef
     ) {
         this.colors = this.nameEntityRecognitionService.colors;
     }
@@ -134,14 +149,19 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         this.initRecords();
         this.generateEntities(this.colors);
         this.charsMapInProgress = true;
-        setTimeout(() => {
+        requestAnimationFrame(() => {
+            this.initFixedHeader();
+            this.flags.initFinish = true;
             this.setCharsMap();
             this.initPositions();
             this.changeEvent();
-            setTimeout(() => {
-                this.initFixedHeader();
-                this.flags.initFinish = true;
+            requestAnimationFrame(() => {
+                this.buildFullHtml();
+                this.flags.showHtml = true;
                 this.changeDetectorRefresh();
+                // console.log('this.entitiesTypes', this.entitiesTypes)
+                // console.log('this.entityPositions', this.entityPositions)
+                // console.log('this.charsMap', this.charsMap)
             })
         })
         // this.chunks = this.getChunks();
@@ -149,8 +169,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     changeDetectorRefresh() {
-        this.ref.markForCheck()
-        this.ref.detectChanges()
+        this.ref.markForCheck();
+        this.ref.detectChanges();
     }
 
     scrollPos = 0;
@@ -168,7 +188,10 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     ngAfterViewInit(): void {
-        this.initFixedHeader();
+        // this.initFixedHeader();
+        this.content.nativeElement.addEventListener('scroll', () => {
+            this.resetToolTip();
+        })
     }
 
     setDesign() {
@@ -209,52 +232,62 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
 
     ngOnChanges(changes: SimpleChanges): void {
         if(changes.entitiesTypes && !changes.entitiesTypes.firstChange) {
-            this.resetPosAndMap();
-            this.resetChartMap();
-            // this.setCharsMap2(0, '', true);
-            // this.charsMapInProgress = true;
-            // this.setCharsMap2(0, '', true);
-            this.generateEntities(this.colors);
-            this.charsMapInProgress = true;
-            setTimeout(() => {
-                this.setCharsMap();
-                this.initPositions();
-                this.resetRecords();
-                this.initRecords();
-                setTimeout(() => {
-                    this.initFixedHeader();
-                })
-            })
+            this.onEntitiesChange();
             // console.log('entitiesTypes' , this.entitiesTypes);
             if(!changes.entitiesTypes.firstChange) {
 
             }
         }
         if(changes.text && !changes.text.firstChange) {
-            this.resetPosAndMap();
-            this.resetChartMap();
-            this.charsMapInProgress = true;
-            setTimeout(() => {
-                this.setCharsMap();
-                this.initPositions();
-                this.resetRecords();
-                this.initRecords();
-            })
+            this.onPositionsOrTextChange();
         }
         if(changes.entityPositions && !changes.entityPositions.firstChange) {
-            this.resetPosAndMap();
-            this.resetChartMap();
-            this.charsMapInProgress = true;
-            setTimeout(() => {
-                this.setCharsMap();
-                this.initPositions();
-                this.resetRecords();
-                this.initRecords();
-            })
+            this.onPositionsOrTextChange();
+        }
+        if(changes.hideSaveButton && !changes.hideSaveButton.firstChange) {
+            this.onPositionsOrTextChange();
+        }
+        if(changes.hideEntitiesButton && !changes.hideEntitiesButton.firstChange) {
+            this.onPositionsOrTextChange();
+        }
+        if(changes.hideResultsButton && !changes.hideResultsButton.firstChange) {
+            this.onPositionsOrTextChange();
         }
         if(changes.design && !changes.design.firstChange) {
             this.setDesign();
         }
+        if(changes.ParentHeightChanged && !changes.ParentHeightChanged.firstChange) {
+            this.initFixedHeader();
+        }
+    }
+
+    onEntitiesChange() {
+        this.generateEntities(this.colors);
+        requestAnimationFrame(() => {
+            this.onPositionsOrTextChange();
+        });
+    }
+
+    onPositionsOrTextChange() {
+        this.resetPosAndMap();
+        this.resetChartMap();
+        this.charsMapInProgress = true;
+        this.flags.showHtml = false;
+        requestAnimationFrame(() => {
+            this.setCharsMap();
+            this.initPositions();
+            this.resetRecords();
+            this.initRecords();
+            this.changeDetectorRefresh();
+            requestAnimationFrame(() => {
+                this.initFixedHeader();
+                requestAnimationFrame(() => {
+                    this.buildFullHtml();
+                    this.flags.showHtml = true;
+                    this.changeDetectorRefresh();
+                });
+            })
+        })
     }
 
     resetPosAndMap() {
@@ -267,19 +300,36 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         this.initFixedHeader();
     }
 
+    @HostListener('window:scroll', ['$event'])
+    onScroll(event) {
+        this.resetToolTip();
+    }
+
 
     initFixedHeader() {
         const parentHeight = this.panel.nativeElement.parentNode.clientHeight;
         // console.log('parentHeight', parentHeight)
-        const panelHeight = this.panel.nativeElement.clientHeight;
+        const panelHeight = this.panel.nativeElement.offsetHeight;
+        let setUpHeight = true;
+        if(panelHeight === parentHeight) {
+            setUpHeight = false;
+        }
         const headerHeight = this.header.nativeElement.clientHeight;
         let buttonsHeight = 0;
         if(this.buttons) {
             buttonsHeight = this.buttons.nativeElement.clientHeight;
         }
+        // console.log('buttonsHeight', buttonsHeight)
+        // console.log('headerHeight', headerHeight)
+        // console.log('parentHeight', parentHeight)
+        // console.log('panelHeight', panelHeight)
+        // console.log('setUpHeight', setUpHeight)
         this.panel.nativeElement.style.paddingTop = headerHeight + 'px';
         this.panel.nativeElement.style.paddingBottom = buttonsHeight + 'px';
-        this.content.nativeElement.style.height = (parentHeight - headerHeight - buttonsHeight) + 'px';
+        const newHeight = parentHeight - headerHeight - buttonsHeight;
+        if(setUpHeight && newHeight > 1) {
+            this.content.nativeElement.style.height = newHeight + 'px';
+        }
         // this.content.nativeElement.style.height = (panelHeight - headerHeight - buttonsHeight) + 'px';
         // this.content.nativeElement.style.height = headerHeight + 'px';
         // console.log('headerHeight', headerHeight)
@@ -305,7 +355,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     endTag = true;
                 }
             }
-            this.charsMap.push({
+            this.charsMap.push( new CharDetails({
                 char: this.text[i],
                 show: show,
                 startTag: startTag,
@@ -319,7 +369,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 classes: '',
                 text_color: '',
                 backgrounds: ''
-            })
+            }))
             if(startChar) {
                 if (this.text[i] === '>') {
                     show = true;
@@ -353,7 +403,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                         endTag = true;
                     }
                 }
-                this.charsMap.push({
+                this.charsMap.push(new CharDetails({
                     char: this.text[i],
                     show: show,
                     startTag: startTag,
@@ -367,7 +417,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     classes: '',
                     text_color: '',
                     backgrounds: ''
-                })
+                }))
                 if (startChar) {
                     if (this.text[i] === '>') {
                         show = true;
@@ -406,7 +456,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                         endTag = true;
                     }
                 }
-                this.charsMap.push({
+                this.charsMap.push(new CharDetails({
                     char: this.text[i],
                     show: show,
                     startTag: startTag,
@@ -420,7 +470,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     classes: '',
                     text_color: '',
                     backgrounds: ''
-                })
+                }))
                 if(startChar) {
                     if (this.text[i] === '>') {
                         show = true;
@@ -444,7 +494,155 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 this.addEntityToCharsMap(entity_type, this.entityPositions[i], start, end);
                 this.addToEntityMap(this.entityPositions[i]);
             }
+            this.entityPositions[i] = new EntityPosition(this.entityPositions[i])
         }
+    }
+
+    buildFullHtml() {
+        this.fullHtml = '';
+        for(let i = 0; i < this.charsMap.length; i++) {
+            const obj = this.charsMap[i];
+            const span = document.createElement('span');
+            span.classList.add("text-char");
+            span.setAttribute('index', i)
+            span.id = 'char' + i;
+            span.innerHTML = obj.char;
+            if (obj.char === '\n') {
+                span.classList.add('newLine')
+            }
+            const finalSpan = this.setUpHtmlChar(span, obj, i);
+            this.fullHtml += finalSpan.outerHTML;
+        }
+        this.element.nativeElement.addEventListener( 'mousemove', ( event ) => {
+            if( !event.target.classList.contains('text-char') ) {
+                this.resetToolTip();
+            }
+        });
+        this.element.nativeElement.addEventListener( 'mouseover', ( event ) => {
+            if( event.target.classList.contains('text-char') ) {
+                const recordIds = event.target.getAttribute('recordIds');
+                const offset = event.target.offsetLeft;
+                var rect = event.target.getBoundingClientRect();
+                if(recordIds) {
+                    this.tooltipPos.top = parseFloat(rect.top + event.target.offsetHeight);
+                    this.tooltipPos.left = parseFloat(rect.left);
+                    this.tooltipPos.text = recordIds;
+                    this.tooltipPos.show = true;
+                    this.changeDetectorRefresh();
+                    if(this.tooltip && this.tooltipPos.left + this.tooltip.nativeElement.clientWidth > this.panel.nativeElement.clientWidth) {
+                        this.tooltipPos.left =  this.tooltipPos.left - this.tooltip.nativeElement.clientWidth;
+                    }
+                    const toolTipMarginTop = 4;
+                    const targetPosition = event.target.offsetTop + event.target.offsetHeight;
+                    const currentSctollTop = this.content.nativeElement.scrollTop;
+                    if(this.tooltip && targetPosition - currentSctollTop + this.tooltip.nativeElement.clientHeight + toolTipMarginTop > this.content.nativeElement.clientHeight) {
+                        this.tooltipPos.top =  this.tooltipPos.top - event.target.offsetHeight - this.tooltip.nativeElement.clientHeight - toolTipMarginTop*2;
+                    }
+                    this.changeDetectorRefresh();
+                } else {
+                    this.resetToolTip();
+                }
+                // const pseudoElement = window.getComputedStyle(event.target, ':before');
+                // let pseudoElementWidth = 0;
+                // pseudoElementWidth += parseFloat(pseudoElement.getPropertyValue('padding-left'));
+                // pseudoElementWidth += parseFloat(pseudoElement.getPropertyValue('width'));
+                // pseudoElementWidth += parseFloat(pseudoElement.getPropertyValue('padding-right'));
+                // if(recordIds && pseudoElementWidth > offset) {
+                //     event.target.classList.add('text-char-left');
+                // }
+        //         const i = parseInt(event.target.getAttribute('index'));
+        //         this.charHover(event, i)
+            } else {
+                // console.log('out of text char')
+                this.resetToolTip();
+            }
+        })
+        this.element.nativeElement.addEventListener( 'click', ( event ) => {
+            if( event.target.classList.contains('text-char') ) {
+                const i = parseInt(event.target.getAttribute('index'));
+                this.openEntityRelationsModel(i);
+            }
+            if( event.target.classList.contains('remove') ) {
+                const i = parseInt(event.target.getAttribute('index'));
+                this.removeEntitiesFromPositions(i + 1);
+            };
+        } );
+
+        // console.log('this.fullHtml', this.fullHtml)
+    }
+
+    setUpHtmlChar(span, obj, i) {
+        // span.classList.add("text-char");
+        // span.setAttribute('index', i)
+        // span.id = 'char' + i;
+        // span.innerHTML = obj.char;
+        // if (obj.char === '\n') {
+        //     span.classList.add('newLine')
+        // }
+        // const finalSpan = this.setUpHtmlChar(span, obj, i);
+
+        span.removeAttribute('entityNames');
+        span.removeAttribute('entityIds');
+        span.removeAttribute('recordIds');
+        span.removeAttribute('style');
+        span.classList = obj.classes;
+        span.classList.add("text-char");
+        if (obj.endTag) {
+            span.classList.add('endTag')
+        }
+        if (obj.char === '\n') {
+            span.classList.add('newLine')
+        }
+        if (obj.startTag && i !== 0) {
+            span.classList.add('startTag')
+        }
+        if (obj.show) {
+            span.setAttribute('show', true)
+        }
+        if (obj.entityNames) {
+            span.setAttribute('entityNames', obj.entityNames)
+        }
+        if (obj.entityIds) {
+            span.setAttribute('entityIds', obj.entityIds)
+        }
+        if (obj.recordIds) {
+            span.setAttribute('recordIds', obj.recordIds)
+        }
+        if (obj.backgrounds) {
+            span.style.backgroundColor = this.getLastBackground(obj.backgrounds);
+            span.style.background = 'linear-gradient(' + obj.backgrounds + ')';
+        }
+        if(obj.text_color) {
+            span.style.color = obj.text_color;
+        }
+        span.innerHTML = obj.char;
+        if(obj.classes.indexOf('last') > -1) {
+            const div = document.createElement('div');
+            div.id = 'remove' + i;
+            div.classList.add('remove');
+            div.setAttribute('index', i)
+            span.appendChild(div);
+            let nextSpan = document.getElementById('char' + (i + 1));
+            if (!nextSpan) {
+                setTimeout(() => {
+                    nextSpan = document.getElementById('char' + (i + 1));
+                    const currSpan = document.getElementById('char' + i);
+                    if (nextSpan && nextSpan.classList && nextSpan.classList.value.indexOf('newLine') > -1) {
+                        currSpan.classList.add('new_line_after')
+                    }
+                })
+            } else {
+                if (nextSpan && nextSpan.classList && nextSpan.classList.value.indexOf('newLine') > -1) {
+                    span.classList.add('new_line_after')
+                }
+            }
+        } else {
+            const remove = document.getElementById('remove' + i);
+            if (remove) {
+                span.removeChild(remove)
+            }
+        }
+        return span;
     }
 
     resetRecords() {
@@ -496,6 +694,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             }
             // if(this.charsMap[i].entities.indexOf(entity.id) === -1) {
             // console.log('posEntity', posEntity)
+                if(!this.charsMap[i]) {
+                    return;
+                }
                 const charsMap: any = {...this.charsMap[i]};
                 const entities = charsMap.entities ? charsMap.entities.split(',') : [];
                 const entityNames = charsMap.entityNames ? charsMap.entityNames.split(',') : [];
@@ -504,7 +705,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 entities.push(entity.id);
                 entityNames.push(entity.name);
                 entityIds.push(posEntity.id);
-                recordIds.push(entityNames + ' (' + posEntity.recordIds + ')');
+                recordIds.push(posEntity.id + '-' + entity.name + ' (' + posEntity.recordIds + ')');
                 // charsMap.recordIds[posEntity.id] = posEntity.recordIds;
                 // charsMap.relationsIds[posEntity.id] = posEntity.relationsIds;
                 charsMap.entities = entities.join(',')
@@ -528,12 +729,16 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 classes.push('labeled_' + posEntity.id);
                 if(cls) {
                     classes.push(entity.id + '_' + posEntity.id + '_' + cls);
+                    if (entity.as_block) {
+                        classes.push(entity.id + '_' + posEntity.id + '_as_block');
+                    }
                     if(start === end - 1) {
                         classes.push(entity.id + '_' + posEntity.id + '_last');
                     }
                 }
                 charsMap.classes = classes.join(' ')
                 this.charsMap[i] = charsMap;
+                this.updateCharHtml(i);
             // }
             // console.log(this.charsMap, this.charsMap)
         }
@@ -583,6 +788,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                             classes.splice(firstIndex, 1);
                             charsMap.classes = classes.join(' ');
                         }
+                        const asBlock = classes.indexOf(entity.id + '_' + posEntity.id + '_as_block');
+                        if(asBlock > -1) {
+                            classes.splice(asBlock, 1);
+                            charsMap.classes = classes.join(' ');
+                        }
                         // const labeledIndex = classes.indexOf('labeled');
                         const labeledIndex = classes.indexOf('labeled_' + posEntity.id);
                         if(labeledIndex > -1) {
@@ -595,7 +805,12 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                     charsMap.entityIds = entityIds.join(',');
                     charsMap.recordIds = recordIds.join('\n');
                     this.charsMap[i] = charsMap;
-                    this.charsMap[i].text_color = this.nameEntityRecognitionService.generateTextColor(this.charsMap[i].backgrounds);
+                    if (this.charsMap[i].backgrounds.length) {
+                        this.charsMap[i].text_color = this.nameEntityRecognitionService.generateTextColor(this.charsMap[i].backgrounds);
+                    } else {
+                        this.charsMap[i].text_color = '';
+                    }
+                    this.updateCharHtml(i);
                 }
             }
         }
@@ -603,24 +818,33 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         // this.initPositions();
     }
 
+    updateCharHtml(i) {
+        const span = document.getElementById('char' + i);
+        // console.log('span', span)
+        if(span) {
+            this.setUpHtmlChar(span, this.charsMap[i], i);
+        }
+    }
     updateCharsMapRecords(entity, recordsToFind) {
         for(let i = entity.start_offset; i < entity.end_offset; i++) {
             const recordIds = this.charsMap[i].recordIds.split('\n');
-            const recordIndex = recordIds.indexOf(entity.id + ' (' + recordsToFind + ')');
+            const entityNames = this.charsMap[i].entityNames.split(',');
+            const recordIndex = recordIds.indexOf(entityNames + ' (' + recordsToFind + ')');
             // console.log('recordIds', recordIds)
             // console.log('recordIndex', recordIndex)
             if(recordIndex > -1) {
                 // console.log('before', recordIds[recordIndex]);
-                recordIds[recordIndex] = entity.id + ' (' + entity.recordIds + ')'
+                recordIds[recordIndex] = entity.entity_type.name + ' (' + entity.recordIds + ')'
                 // console.log('after', recordIds[recordIndex]);
             }
             this.charsMap[i].recordIds = recordIds.join('\n');
+            this.updateCharHtml(i);
         }
     }
     addEntityToPositions(entity) {
         const entitiesMap = this.entityPositions.map((o) => o.id.toString());
         const nextId = this.getNextId(entitiesMap);
-        const position = {
+        const position = new EntityPosition({
             id: this.entityIdPrefix + nextId,
             prob: 0.0,
             start_offset: this.startOffset,
@@ -628,8 +852,8 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             entity_id: entity.id,
             entity_type: entity,
             recordIds: this.selectedRecords.join(','),
-            relationsIds: ''
-        };
+            relationsIds: {}
+        });
         this.entityPositions.push(position);
 
         // console.log('this.entityPositions', this.entityPositions)
@@ -674,12 +898,44 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             if (!this.entitiesTypes[i].text_color) {
                 this.entitiesTypes[i].text_color = this.nameEntityRecognitionService.getTextColor(color);
             }
+            this.entitiesTypes[i] = new EntityType(this.entitiesTypes[i]);
+            if (this.entitiesTypes[i].short_key) {
+                this.setupShortKey(this.entitiesTypes[i])
+            }
             count++;
         }
         if(this.entitiesTypes.length) {
             this.currentEntity = this.entitiesTypes[0];
         }
         // console.log('this.entitiesTypes', this.entitiesTypes)
+    }
+
+    setupShortKey(entity: EntityType) {
+        this.shortKeysMap[entity.short_key.toUpperCase()] = entity.id;
+        // console.log('this.entitiesTypes[i].short_key', entity)
+    }
+
+    @HostListener('window:keypress', ['$event'])
+    onKeyPress(e) {
+        let keynum;
+        if(window.event) { // IE
+            keynum = e.keyCode;
+        } else if(e.which){ // Netscape/Firefox/Opera
+            keynum = e.which;
+        }
+        const finalKey = String.fromCharCode(keynum).toUpperCase();
+        // console.log('finalKey', finalKey)
+        // console.log('finalKey', e.shiftKey)
+        if (this.shortKeysMap[finalKey] && e.shiftKey) {
+            const entityId = this.shortKeysMap[finalKey];
+            // console.log('entityId', entityId)
+            const map = this.entitiesTypes.map((o) => o.id);
+            const index = map.indexOf(entityId);
+            if(index > -1) {
+                // console.log('index', index)
+                this.selectEntity(this.entitiesTypes[index]);
+            }
+        }
     }
 
     setSelectedRange(e) {
@@ -744,15 +1000,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if(index > -1) {
             this.currentRelationsEntityIndex = index;
             const currentEntity = this.entityPositions[index];
-            if(this.startOffset === this.endOffset) {
-                this.currentRelationsEntity = currentEntity;
-                this.currentRelationsEntity.records = this.currentRelationsEntity.recordIds.split(',');
-                this.animatedModel = true;
-                setTimeout(() => {
-                    this.models.showRelationsModel = true;
-                    this.changeDetectorRefresh();
-                })
-            }
+            this.openRelationsModel(currentEntity);
         }
     }
     charHover(e, index) {
@@ -778,7 +1026,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
     mouseUp(e) {
         const sel = window.getSelection().getRangeAt(0);
-        console.log('sel', sel)
+        // console.log('sel', sel)
         const parent = sel.startContainer.parentNode;
         const start = window.getSelection().anchorOffset;
         const end = window.getSelection().focusOffset;
@@ -835,25 +1083,25 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     addEntity(entityId) {
         if (this.validRange()) {
             let indent = 0;
-            console.log('this.startOffset', this.startOffset)
-            console.log('this.textIndent', this.textIndent)
+            // console.log('this.startOffset', this.startOffset)
+            // console.log('this.textIndent', this.textIndent)
             for( const pos in this.textIndent) {
                 if (parseInt(pos, 0) <= this.startOffset) {
                     indent += this.textIndent[pos];
                 }
             }
-            console.log('indent before add', indent)
+            // console.log('indent before add', indent)
             const entitiesMap = this.entityPositions.map((o) => o.id.toString());
             const nextId = this.getNextId(entitiesMap);
-            const entity = {
+            const entity = new EntityPosition({
                 id: this.entityIdPrefix + nextId,
                 prob: 0.0,
                 start_offset: this.startOffset + indent,
                 end_offset: this.endOffset + indent,
                 entity_id: entityId,
                 recordIds: this.selectedRecords.join(','),
-                relationsIds: ''
-            };
+                relationsIds: {}
+            });
             this.entityPositions.push(entity);
             this.onAddedEntity();
             // this.$emit('add-entity', entity);
@@ -866,7 +1114,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     removeEntity(entity) {
-        console.log('entity', entity);
+        // console.log('entity', entity);
         const entitiesMap = this.entityPositions.map((o) => o.id);
         const entityIndex = entitiesMap.indexOf(entity.id);
         if (entityIndex > -1) {
@@ -887,7 +1135,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     openRelationsModel(entity) {
         if(this.startOffset === this.endOffset) {
             this.currentRelationsEntity = entity;
+            this.currentRelationsEntity.records = this.currentRelationsEntity.recordIds.split(',');
             this.animatedModel = true;
+            this.changeDetectorRefresh();
             setTimeout(() => {
                 this.models.showRelationsModel = true;
                 this.changeDetectorRefresh();
@@ -906,19 +1156,25 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     toggleRelations(entity) {
-        let relationsIds = [];
-        if(this.currentRelationsEntity.relationsIds) {
-            relationsIds = this.currentRelationsEntity.relationsIds.split(',');
-        }
-        const index = relationsIds.indexOf(entity.id.toString());
-        if(index > -1) {
-            relationsIds.splice(index, 1);
+        if (this.currentRelationsEntity.relationsIds[entity.id.toString()] !== undefined) {
+            delete this.currentRelationsEntity.relationsIds[entity.id.toString()];
         } else {
-            relationsIds.push(entity.id);
+            let val = '';
+            if (this.relationOptions.length) {
+                val = this.relationOptions[0];
+            }
+            this.currentRelationsEntity.relationsIds[entity.id.toString()] = val;
         }
-        this.currentRelationsEntity.relationsIds = relationsIds.join(',');
         this.updateEntityRelations(this.currentRelationsEntity);
         this.changeEvent();
+    }
+
+    changeRelationOption(entity, option) {
+        this.currentRelationsEntity.relationsIds[entity.id.toString()] = option;
+    }
+
+    preetyJson(json) {
+        return Object.keys(json).map(k => k + (json[k] ? ':' + json[k] : '')).join(', ');
     }
 
     createEntity(startOffset, endOffset) {
@@ -1151,7 +1407,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             text_color: '#888888',
         };
         this.records.push(data);
-        this.initFixedHeader();
+        requestAnimationFrame(() => {
+            this.initFixedHeader();
+        })
     }
 
     removeRecord(id) {
@@ -1167,6 +1425,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.removeRecordFromEntities(recordId);
             this.changeEvent();
         }
+        requestAnimationFrame(() => {
+            this.initFixedHeader();
+        })
         // this.$emit('remove-entity', index);
     }
 
@@ -1451,4 +1712,66 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         return obj
     }
 
+    resetToolTip() {
+        if(this.tooltipPos.show) {
+            this.tooltipPos = {
+                show: false,
+                text: '',
+                top: '',
+                left: '',
+                right: '',
+                bottom: '',
+            }
+            this.changeDetectorRefresh();
+        }
+    }
+
+}
+
+export class CharDetails {
+    char: string;
+    show: boolean;
+    startTag: boolean;
+    endTag: boolean;
+    entities: string;
+    entityNames: string;
+    entityIds: string;
+    recordIds: string;
+    classes: string;
+    text_color: string;
+    backgrounds: string;
+    constructor(obj?:Partial<CharDetails>) {
+        Object.assign(this, obj);
+    }
+}
+
+export class EntityPosition {
+    id: string;
+    prob: number;
+    start_offset: number;
+    end_offset: number;
+    entity_id: number;
+    entity_type: EntityType;
+    recordIds: string;
+    relationsIds: any;
+
+    constructor(obj?:Partial<EntityPosition>) {
+        Object.assign(this, obj);
+    }
+}
+
+export class EntityType {
+    background_color: string;
+    id: string;
+    name: string;
+    text_color: string;
+    short_key: string;
+    as_block: boolean;
+    constructor(obj?:Partial<EntityType>) {
+        Object.assign(this, obj);
+    }
+}
+
+export class EntityRelations {
+    id: string
 }
