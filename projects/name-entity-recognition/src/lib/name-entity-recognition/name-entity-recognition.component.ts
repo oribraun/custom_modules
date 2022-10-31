@@ -90,6 +90,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @Input() hideSaveButton = false;
     @Input() hideEntitiesButton = false;
     @Input() hideResultsButton = false;
+    @Input() dashboardItems: DashboardItem[]= [
+        new DashboardItem({key: 'website', val: 'https://google.com'}),
+        new DashboardItem({key: 'website2', val: 'https://google.comasfasdfasdfasdfasdfasdfasdfasdf', link: true}),
+        new DashboardItem({key: 'website2', val: 'https://google.com', link: true}),
+        new DashboardItem({key: 'website2', val: 'https://google.com', link: true})
+    ];
+    @Input() allowLabelMultipleRecords = true;
     private shortKeysMap = {}
     charsMap: CharDetails[] = [];
     fullHtml = '';
@@ -147,6 +154,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         this.setDesign();
         this.resetRecords();
         this.initRecords();
+        if (!this.allowLabelMultipleRecords) {
+            this.selectLastRecord();
+        }
         this.generateEntities(this.colors);
         this.charsMapInProgress = true;
         requestAnimationFrame(() => {
@@ -655,6 +665,10 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             },
         ]
         this.selectedRecords = [this.records[0].id];
+    }
+
+    selectLastRecord() {
+        this.selectedRecords = [this.records[this.records.length - 1].id];
     }
 
     initRecords() {
@@ -1407,6 +1421,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             text_color: '#888888',
         };
         this.records.push(data);
+        if (!this.allowLabelMultipleRecords) {
+            this.selectLastRecord();
+        }
         requestAnimationFrame(() => {
             this.initFixedHeader();
         })
@@ -1424,6 +1441,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.removeRecordFromSelectedRecords(recordId);
             this.removeRecordFromEntities(recordId);
             this.changeEvent();
+        }
+        if (!this.allowLabelMultipleRecords) {
+            this.selectLastRecord();
         }
         requestAnimationFrame(() => {
             this.initFixedHeader();
@@ -1478,6 +1498,10 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             this.selectedRecords.splice(index, 1);
         } else {
             this.selectedRecords.push(id);
+        }
+        if (!this.allowLabelMultipleRecords) {
+            this.selectLastRecord();
+            this.selectedRecords = [id];
         }
     }
 
@@ -1774,4 +1798,13 @@ export class EntityType {
 
 export class EntityRelations {
     id: string
+}
+
+export class DashboardItem {
+    key: string;
+    val: string;
+    link: boolean = false;
+    constructor(obj?:Partial<DashboardItem>) {
+        Object.assign(this, obj);
+    }
 }

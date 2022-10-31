@@ -2,6 +2,19 @@
      [ngClass]="{'hidden': !flags.initFinish}">
     <div class="panel" #panel>
         <header class="panel-header" #header [ngStyle]="defaultDesign.header">
+            <div class="dashboard-triangle"></div>
+            <div class="dashboard">
+                <div class="dashboard-scroll">
+                    <div class="dashboard-item" *ngFor="let item of dashboardItems">
+                        <label class="dashboard-label"><b>{{item.key}}</b></label>
+                        <div>
+                            <a
+                                [attr.href]="item.link ? item.val : null"
+                                [attr.target]="item.link ? '_blank' : null" class="dashboard-text">{{item.val}}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="header-text">RECORDS <div class="add" (click)="addRecord()"></div></div>
             <div class="field">
                 <div class="control" *ngFor="let record of records; let i = index">
