@@ -239,18 +239,25 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if(changes.entitiesTypes && !changes.entitiesTypes.firstChange) {
-            this.onEntitiesChange();
+        if(changes.entitiesTypes) {
+            if (!this.entitiesTypes) {
+                this.entitiesTypes = [];
+            }
             // console.log('entitiesTypes' , this.entitiesTypes);
             if(!changes.entitiesTypes.firstChange) {
-
+                this.onEntitiesChange();
             }
         }
         if(changes.text && !changes.text.firstChange) {
             this.onPositionsOrTextChange();
         }
-        if(changes.entityPositions && !changes.entityPositions.firstChange) {
-            this.onPositionsOrTextChange();
+        if(changes.entityPositions) {
+            if (!this.entityPositions) {
+                this.entityPositions = [];
+            }
+            if (!changes.entityPositions.firstChange) {
+                this.onPositionsOrTextChange();
+            }
         }
         if(changes.hideSaveButton && !changes.hideSaveButton.firstChange) {
             this.onPositionsOrTextChange();
@@ -266,6 +273,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
         if(changes.ParentHeightChanged && !changes.ParentHeightChanged.firstChange) {
             this.initFixedHeader();
+        }
+        if(changes.relationOptions) {
+            if (!this.relationOptions) {
+                this.relationOptions = [];
+            }
         }
     }
 
@@ -671,7 +683,6 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     addEntityToLastChar(span, i) {
-        console.log('span', span.classList)
         const classes = span.classList.value.split(' ');
         const last_label = classes.find((word, index) => word.includes('last') ? index : false)
         const s = document.createElement('span');
@@ -994,6 +1005,9 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     setSelectedRange(e) {
+        if (!this.entitiesTypes.length) {
+            return;
+        }
         let start;
         let end;
         let element = this.nameEntityRecognition.nativeElement;
