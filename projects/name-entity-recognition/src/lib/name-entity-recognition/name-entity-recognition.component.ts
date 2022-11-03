@@ -34,6 +34,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @ViewChild('panel') panel;
     @ViewChild('header') header;
     @ViewChild('content') content;
+    @ViewChild('nameEntityRecognition') nameEntityRecognition;
     @ViewChild('buttons') buttons;
     @ViewChild('nerTooltip') tooltip;
     @Output() onSave: EventEmitter<any> = new EventEmitter<any>();
@@ -90,13 +91,10 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @Input() hideSaveButton = false;
     @Input() hideEntitiesButton = false;
     @Input() hideResultsButton = false;
-    @Input() dashboardItems: DashboardItem[]= [
-        new DashboardItem({key: 'website', val: 'https://google.com'}),
-        new DashboardItem({key: 'website2', val: 'https://google.comasfasdfasdfasdfasdfasdfasdfasdf', link: true}),
-        new DashboardItem({key: 'website2', val: 'https://google.com', link: true}),
-        new DashboardItem({key: 'website2', val: 'https://google.com', link: true})
-    ];
+    @Input() dashboardItems: DashboardItem[]= [];
     @Input() allowLabelMultipleRecords = true;
+    @Input() allowMultipleEntities = true;
+    @Input() showEntityInText = false;
     private shortKeysMap = {}
     charsMap: CharDetails[] = [];
     fullHtml = '';
@@ -567,8 +565,15 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                 this.resetToolTip();
             }
         })
+        // this.element.nativeElement.addEventListener( 'mousedown', ( event ) => {
+        //     console.log('event.target1', event.target)
+        //     // if (event.target.className === 'entity-label') {
+        //     //     event.preventDefault();
+        //     //     return;
+        //     // }
+        // })
         this.element.nativeElement.addEventListener( 'click', ( event ) => {
-            if( event.target.classList.contains('text-char') ) {
+            if( event.target.classList.contains('text-char') || event.target.classList.contains('entity-label') ) {
                 const i = parseInt(event.target.getAttribute('index'));
                 this.openEntityRelationsModel(i);
             }
@@ -625,13 +630,15 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if(obj.text_color) {
             span.style.color = obj.text_color;
         }
+        if (obj.entityIds && !this.allowMultipleEntities) {
+            span.classList.add('block-marking')
+        }
         span.innerHTML = obj.char;
         if(obj.classes.indexOf('last') > -1) {
-            const div = document.createElement('div');
-            div.id = 'remove' + i;
-            div.classList.add('remove');
-            div.setAttribute('index', i)
-            span.appendChild(div);
+            this.addRemoveIconToLastChar(span, i);
+            if (this.showEntityInText) {
+                this.addEntityToLastChar(span, i);
+            }
             let nextSpan = document.getElementById('char' + (i + 1));
             if (!nextSpan) {
                 setTimeout(() => {
@@ -653,6 +660,35 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             }
         }
         return span;
+    }
+
+    addRemoveIconToLastChar(span, i) {
+        const div = document.createElement('div');
+        div.id = 'remove' + i;
+        div.classList.add('remove');
+        div.setAttribute('index', i)
+        span.appendChild(div);
+    }
+
+    addEntityToLastChar(span, i) {
+        console.log('span', span.classList)
+        const classes = span.classList.value.split(' ');
+        const last_label = classes.find((word, index) => word.includes('last') ? index : false)
+        const s = document.createElement('span');
+        const char = this.charsMap[i];
+        const id = char.entityIds;
+        const records = char.recordIds.split(' ');
+        let onlyRecords = '';
+        if (records.length) {
+            onlyRecords = records[records.length - 1];
+        }
+        s.id = 'entity' + id;
+        s.classList.add('entity-label');
+        s.style = span
+        s.innerText = this.currentEntity.name + ' - ' + onlyRecords;
+        s.setAttribute('parentClass', last_label);
+        s.setAttribute('index', i)
+        span.appendChild(s);
     }
 
     resetRecords() {
@@ -792,8 +828,13 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
                         const classes = charsMap.classes.split(' ');
                         const lastIndex = classes.indexOf(entity.id + '_' + posEntity.id + '_last');
                         const firstIndex = classes.indexOf(entity.id + '_' + posEntity.id + '_first');
+                        const blockMarkingIndex = classes.indexOf('block-marking');
                         // console.log('lastIndex', lastIndex)
                         // console.log('firstIndex', firstIndex)
+                        if (blockMarkingIndex > -1 && !this.allowMultipleEntities) {
+                            classes.splice(blockMarkingIndex, 1);
+                            charsMap.classes = classes.join(' ');
+                        }
                         if(lastIndex > -1) {
                             classes.splice(lastIndex, 1);
                             charsMap.classes = classes.join(' ');
@@ -955,6 +996,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     setSelectedRange(e) {
         let start;
         let end;
+        let element = this.nameEntityRecognition.nativeElement;
+        let mapEntitiesText = {};
+        if (this.showEntityInText) {
+            mapEntitiesText = this.removeEntitiesBeforeSelection();
+        }
         if (window.getSelection) {
             const selection = window.getSelection();
             if (!selection.anchorNode) {
@@ -976,10 +1022,28 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             start = preSelectionTextRange.text.length;
             end = start + selectedTextRange.text.length;
         }
+        if (this.showEntityInText) {
+            this.addEntitiesAfterSelection(mapEntitiesText);
+        }
         this.startOffset = start;
         this.endOffset = end;
         // console.log(start, end);
+        if (this.showEntityInText && e.target.className === 'entity-label') {
+            const i = parseInt(e.target.parentNode.getAttribute('index'));
+            console.log('i', i)
+            this.openEntityRelationsModel(i);
+            this.clearSelection();
+            return;
+        }
         if(this.currentEntity && start < end) {
+
+            if (!this.allowMultipleEntities) {
+                if (this.charsMap[start].entityIds || this.charsMap[end].entityIds) {
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    return;
+                }
+            }
             const newPos = this.addEntityToPositions(this.currentEntity);
             this.addEntityToCharsMap(this.currentEntity, newPos, start, end);
             this.clearSelection();
@@ -997,6 +1061,32 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
             }
         } else if (document.selection) {  // IE?
             document.selection.empty();
+        }
+    }
+
+    removeEntitiesBeforeSelection() {
+        let element = this.nameEntityRecognition.nativeElement;
+        const mapEntitiesText = {};
+        element.querySelectorAll('.entity-label').forEach((e) => {
+            var parent = e.parentNode;
+            var parentClasses = parent.classList.value.split(' ')
+            var lastIndex = parentClasses.indexOf(e.getAttribute('parentClass'))
+            if (lastIndex > -1) {
+                var lastClass = parentClasses[lastIndex]
+                mapEntitiesText[lastClass] = e;
+            }
+            e.remove()
+        });
+        return mapEntitiesText;
+    }
+
+    addEntitiesAfterSelection(mapEntitiesText) {
+        let element = this.nameEntityRecognition.nativeElement;
+        for (var i in mapEntitiesText) {
+            const e = element.getElementsByClassName(i)
+            if (e.length) {
+                e[0].appendChild(mapEntitiesText[i]);
+            }
         }
     }
 

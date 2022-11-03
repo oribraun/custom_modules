@@ -2,8 +2,8 @@
      [ngClass]="{'hidden': !flags.initFinish}">
     <div class="panel" #panel>
         <header class="panel-header" #header [ngStyle]="defaultDesign.header">
-            <div class="dashboard-triangle"></div>
-            <div class="dashboard">
+            <div class="dashboard-triangle" *ngIf="dashboardItems.length"></div>
+            <div class="dashboard" *ngIf="dashboardItems.length">
                 <div class="dashboard-scroll">
                     <div class="dashboard-item" *ngFor="let item of dashboardItems">
                         <label class="dashboard-label"><b>{{item.key}}</b></label>

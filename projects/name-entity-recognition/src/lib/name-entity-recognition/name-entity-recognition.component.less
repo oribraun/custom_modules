@@ -282,6 +282,17 @@
                             display: block;
                         }
                     }
+                    &.block-marking {
+                        //-webkit-user-select: none;
+                        //-khtml-user-select: none;
+                        //-moz-user-select: -moz-none;
+                        //-o-user-select: none;
+                        //user-select: none;
+                        &::selection {
+                            background: none;
+                            color: inherit;
+                        }
+                    }
                 }
                 .tag {
                     line-height: 1;
@@ -881,6 +892,24 @@
         bottom:0;
         top: 0;
         left: 49.5%;
+    }
+}
+
+.entity-label {
+    margin: 0 5px;
+    font-size: .8em;
+    line-height: 1;
+    padding: 3px;
+    display: inline-block;
+    border-radius: 5px;
+    vertical-align: middle;
+    margin-top: -0.2em;
+    font-weight: bold;
+    background: inherit;
+    box-shadow: 0 0 5px #8f8f8f;
+    &::selection {
+        background: none !important;
+        color: inherit !important;
     }
 }
 

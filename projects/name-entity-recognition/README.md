@@ -81,6 +81,15 @@ class ExampleComponent {
              }
          }
      };
+     public allowLabelMultipleRecords = false;
+     public allowMultipleEntities = false;
+     public showEntityInText = true;
+     public dashboardItems: any[]= [
+         {key: 'website', val: 'https://google.com'},
+         {key: 'website2', val: 'https://google.comasfasdfasdfasdfasdfasdfasdfasdf', link: true},
+         {key: 'website2', val: 'https://google.com', link: true},
+         {key: 'website2', val: 'https://google.com', link: true}
+         ];
      parentHeight = '500px';
      onSave(results) {
          console.log('results', results);
@@ -111,7 +120,10 @@ class ExampleComponent {
     [hideSaveButton]="false"
     [hideEntitiesButton]="false"
     [hideResultsButton]="false"
-    [allowLabelMultipleRecords]="true"
+    [allowLabelMultipleRecords]="allowLabelMultipleRecords"
+    [allowMultipleEntities]="allowMultipleEntities"
+    [showEntityInText]="showEntityInText"
+    [dashboardItems]="dashboardItems"
     (onSave)="onSave($event)"
     (onChange)="onChange($event)"
     (onShowEntities)="onShowEntities($event)"
