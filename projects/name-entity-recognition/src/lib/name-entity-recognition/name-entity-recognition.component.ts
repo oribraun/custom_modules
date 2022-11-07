@@ -289,11 +289,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     onPositionsOrTextChange() {
-        this.resetPosAndMap();
-        this.resetChartMap();
         this.charsMapInProgress = true;
         this.flags.showHtml = false;
         requestAnimationFrame(() => {
+            this.resetPosAndMap();
+            this.resetChartMap();
             this.setCharsMap();
             this.initPositions();
             this.resetRecords();
