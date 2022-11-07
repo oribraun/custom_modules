@@ -94,7 +94,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     @Input() dashboardItems: DashboardItem[]= [];
     @Input() allowLabelMultipleRecords = true;
     @Input() allowMultipleEntities = true;
-    @Input() showEntityInText = false;
+    @Input() showEntityInText: any = false;
     private shortKeysMap = {}
     charsMap: CharDetails[] = [];
     fullHtml = '';
@@ -647,10 +647,10 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
         span.innerHTML = obj.char;
         if(obj.classes.indexOf('last') > -1) {
-            this.addRemoveIconToLastChar(span, i);
             if (this.showEntityInText) {
                 this.addEntityToLastChar(span, i);
             }
+            this.addRemoveIconToLastChar(span, i);
             let nextSpan = document.getElementById('char' + (i + 1));
             if (!nextSpan) {
                 setTimeout(() => {
@@ -675,11 +675,14 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
     }
 
     addRemoveIconToLastChar(span, i) {
+        const s = document.createElement('span');
         const div = document.createElement('div');
         div.id = 'remove' + i;
         div.classList.add('remove');
         div.setAttribute('index', i)
-        span.appendChild(div);
+        s.appendChild(div)
+        s.classList.add('remove-wrapper');
+        span.appendChild(s);
     }
 
     addEntityToLastChar(span, i) {
@@ -695,8 +698,11 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         }
         s.id = 'entity' + id;
         s.classList.add('entity-label');
-        s.style = span
+        s.style = span;
         s.innerText = this.currentEntity.name + ' - ' + onlyRecords;
+        if (this.showEntityInText === 'only-records') {
+            s.innerText = onlyRecords.replace('(', '').replace(')', '');
+        }
         s.setAttribute('parentClass', last_label);
         s.setAttribute('index', i)
         span.appendChild(s);
@@ -1099,7 +1105,12 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         for (var i in mapEntitiesText) {
             const e = element.getElementsByClassName(i)
             if (e.length) {
-                e[0].appendChild(mapEntitiesText[i]);
+                var removeWrapper = e[0].getElementsByClassName('remove-wrapper');
+                if (removeWrapper && removeWrapper.length) {
+                    e[0].insertBefore(mapEntitiesText[i], removeWrapper[0]);
+                } else {
+                    e[0].appendChild(mapEntitiesText[i]);
+                }
             }
         }
     }
