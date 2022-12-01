@@ -854,48 +854,48 @@
 
 .remove-wrapper {
     position: relative;
-    .remove {
+}
+.remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    height: 8px;
+    width: 8px;
+    cursor: pointer;
+    transform-origin: center center;
+    border-radius: 100%;
+    //border: solid 1px red;
+    z-index: 1;
+    //background: #fff;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+
+    &:before, &:after {
+        background-color: red;
+        content: "";
+        display: block;
         position: absolute;
-        top: -6px;
-        right: -6px;
-        height: 8px;
-        width: 8px;
-        cursor: pointer;
-        transform-origin: center center;
-        border-radius: 100%;
-        //border: solid 1px red;
-        z-index: 1;
-        //background: #fff;
-        -webkit-transform: rotate(45deg);
-        transform: rotate(45deg);
-        -webkit-transform-origin: center center;
-        transform-origin: center center;
+        //-webkit-transform: rotate(45deg);
+        //transform: rotate(45deg);
+        //-webkit-transform-origin: center center;
+        //transform-origin: center center;
+    }
 
-        &:before, &:after {
-            background-color: red;
-            content: "";
-            display: block;
-            position: absolute;
-            //-webkit-transform: rotate(45deg);
-            //transform: rotate(45deg);
-            //-webkit-transform-origin: center center;
-            //transform-origin: center center;
-        }
+    &:before {
+        // horizontal
+        height: 1%;
+        right: 0;
+        left: 0;
+        top: 49.5%;
+    }
 
-        &:before {
-            // horizontal
-            height: 1%;
-            right: 0;
-            left: 0;
-            top: 49.5%;
-        }
-
-        &:after {
-            width: 1%;
-            bottom: 0;
-            top: 0;
-            left: 49.5%;
-        }
+    &:after {
+        width: 1%;
+        bottom: 0;
+        top: 0;
+        left: 49.5%;
     }
 }
 

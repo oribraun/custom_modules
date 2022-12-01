@@ -1058,7 +1058,7 @@ export class NameEntityRecognitionComponent implements OnInit, AfterViewInit, On
         if(this.currentEntity && start < end) {
 
             if (!this.allowMultipleEntities) {
-                if (this.charsMap[start].entityIds || this.charsMap[end].entityIds) {
+                if (this.charsMap[start].entityIds || this.charsMap[end - 1].entityIds) {
                     const selection = window.getSelection();
                     selection.removeAllRanges();
                     return;
